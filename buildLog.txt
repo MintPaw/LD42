@@ -1,0 +1,53 @@
+
+C:\Dropbox\LD42\game>rd /s /q bin\assets 
+
+C:\Dropbox\LD42\game>mkdir bin\assets 
+
+C:\Dropbox\LD42\game>cd sourceAssets 
+
+C:\Dropbox\LD42\game\sourceAssets>set packer="..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" 
+
+C:\Dropbox\LD42\game\sourceAssets>"..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" --powerOf2 --format pixijs sprites ../bin/assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM "..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" --powerOf2 --format pixijs minimap ../bin/assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM "..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" --powerOf2 --format pixijs ui ../bin/assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM "..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" --powerOf2 --format pixijs particles ../bin/assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM "..\buildSystem\SpriteSheetPacker\SpriteSheetPacker.exe" --powerOf2 --format pixijs tiles ../bin/assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM magick montage -mode concatenate -channel rgba -background transparent -tile 8x tiles/* tilesheet.png 
+
+C:\Dropbox\LD42\game\sourceAssets>REM copy tilesheet.png ..\bin\assets 
+
+C:\Dropbox\LD42\game\sourceAssets>REM xcopy /s /y /i maps ..\bin\assets\maps 
+
+C:\Dropbox\LD42\game\sourceAssets>cd .. 
+
+C:\Dropbox\LD42\game>exit /b 0 
+
+C:\Dropbox\LD42\game>mkdir bin 
+
+C:\Dropbox\LD42\game>copy src\* bin 
+src\main.js
+src\utils.js
+        2 file(s) copied.
+
+C:\Dropbox\LD42\game>copy buildSystem\phaser.js bin 
+        1 file(s) copied.
+
+C:\Dropbox\LD42\game>copy buildSystem\index.html bin 
+        1 file(s) copied.
+
+C:\Dropbox\LD42\game>start "" http://127.0.0.1:8980/bin 
+
+
+
+
+Game being served, visit "http://127.0.0.1:8980/bin" to play.
+Close this window or press Ctrl-C to stop serving.
+
+
+
+
