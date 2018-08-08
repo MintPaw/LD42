@@ -10,10 +10,13 @@ r:
 	cmd /c "call buildSystem/run.bat"
 
 ship:
-	cp -r bin/* /d/mintpaw.github.io/LD42
 	cd /d/mintpaw.github.io; \
 		git reset --hard; \
-		git pull; \
+		git pull;
+	
+	cp -r bin/* /d/mintpaw.github.io/LD42
+	
+	cd /d/mintpaw.github.io; \
 		git add .; \
 		git commit -m "LD42 up"; \
 		git push; \
