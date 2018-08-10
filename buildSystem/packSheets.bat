@@ -1,4 +1,3 @@
-
 rd /s /q bin\assets
 mkdir bin\assets
 

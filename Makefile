@@ -1,10 +1,15 @@
+PACKER="../buildSystem/SpriteSheetPacker/SpriteSheetPacker.exe"
+
 all:
 	$(MAKE) b
 	$(MAKE) r
 
 b:
 	-mkdir bin
-	cmd /c "call buildSystem/packSheets.bat"
+	rm -rf bin/assets
+	mkdir bin/assets
+	-cd sourceAssets; \
+		$(PACKER) --powerOf2 --format pixijs sprites ../bin/assets
 	$(MAKE) buildSounds
 	cp buildSystem/phaser.d.ts src
 	tsc src/*.ts --outdir bin
