@@ -12,6 +12,9 @@ let config = {
 	pixelArt: true,
 	disableContextMenu: true,
 	antialias: true,
+	audio: {
+		disableWebAudio: true
+	},
 	physics: {
 		default: "arcade",
 		arcade: {
@@ -47,6 +50,8 @@ let game = {
 	keyLeft: null,
 	keyRight: null,
 	keySpace: null,
+
+	beepSound: null,
 }
 
 let scene = null;
@@ -60,9 +65,16 @@ function preload() {
 	// scene.load.atlas("particles", "assets/particles.png", "assets/particles.json");
 	// scene.load.image("tilesheet", "assets/tilesheet.png");
 	// scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
+
+	scene.load.audio("beep", [
+		"assets/audio/beep.mp3",
+	],{
+		instances: 1
+	});
 }
 
 function create() {
+	game.beepSound = scene.sound.add("beep", { loop: false });
 	{ /// Setup game and groups
 		// game.bulletGroup = scene.physics.add.group();
 		// game.enemyBulletsGroup = scene.physics.add.group();
@@ -153,6 +165,10 @@ function update(delta) {
 	if (game.keyA.isDown || game.keyLeft.isDown) left = true;
 	if (game.keyD.isDown || game.keyRight.isDown) right = true;
 	if (game.keySpace.isDown) space = true;
+
+	if (space) {
+		game.beepSound.play();
+	}
 
 	if (!game.player) { /// Setup player
 		game.player = scene.physics.add.image(0, 0, "sprites", "sprites/player");
