@@ -1,4 +1,3 @@
-start "" http://127.0.0.1:8980/bin
 @echo off
 echo.
 echo.
@@ -18,4 +17,5 @@ if exist %appdata%\..\Local\Programs\Python\Python37-32 (
 )
 
 REM echo Python should be at %py%
-%py% -m http.server 8980
+start %py% -m http.server 8980
+start "" http://127.0.0.1:8980/bin

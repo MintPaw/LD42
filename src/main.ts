@@ -29,17 +29,18 @@ let log = console.log;
 let phaser = new Phaser.Game(config);
 
 let game = {
-	firstFrame: true,
-	width: 0,
-	height: 0,
-	time: 0,
-	elapsed: 0,
+	player: null,
+	firstFrame:<boolean> true,
+	width:<number> 0,
+	height:<number> 0,
+	time:<number> 0,
+	elapsed:<number> 0,
 
-	mouseX: 0,
-	mouseY: 0,
-	mouseDown: false,
-	mouseJustDown: false,
-	mouseJustUp: false,
+	mouseX:<number> 0,
+	mouseY:<number> 0,
+	mouseDown:<boolean> false,
+	mouseJustDown:<boolean> false,
+	mouseJustUp:<boolean> false,
 
 	keyW: null,
 	keyS: null,
@@ -66,11 +67,11 @@ function preload() {
 	// scene.load.image("tilesheet", "assets/tilesheet.png");
 	// scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
 
-	scene.load.audio("beep", [
-		"assets/audio/beep.mp3",
-	],{
-		instances: 1
-	});
+	function addAudio(name, path, instances=1) {
+		scene.load.audio(name, [path], {instances: instances});
+	}
+
+	addAudio("beep", "assets/audio/beep.mp3");
 }
 
 function create() {
@@ -120,7 +121,7 @@ function create() {
 
 function update(delta) {
 	if (game.firstFrame) {
-		game.firstFrame = false;
+		game.firstFrame = null;
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -185,8 +186,5 @@ function update(delta) {
 	{ /// Reset inputs
 		game.mouseJustDown = false;
 		game.mouseJustUp = false;
-
-		game.isOverBase = false;
-		game.speedUpTimer = false;
 	}
 }
