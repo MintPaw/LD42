@@ -88,12 +88,6 @@ function preload() {
 function create() {
 	// game.beepSound = scene.sound.add("beep", { loop: false });
 
-	{ /// Setup game and groups
-		game.friendlyBulletGroup = scene.physics.add.group();
-		game.enemyBulletGroup = scene.physics.add.group();
-		game.enemyGroup = scene.physics.add.group();
-	}
-
 	{ /// Setup inputs
 		// scene.input.on("gameobjectdown", gameObjectDown, this);
 		// scene.input.on("gameobjectup", gameObjectUp, this);
@@ -176,9 +170,29 @@ function shootBullet(bulletType, xpos, ypos, rad, friendly) {
 	return bullet;
 }
 
+function bulletVplayer(s1, s2) {
+	let bullet = game.enemyBulletGroup.contains(s1) ? s1 : s2;
+	let player = bullet == s1 ? s2 : s1;
+
+	bullet.destroy();
+}
+
+function bulletVenemy(s1, s2) {
+	let bullet = game.friendlyBulletGroup.contains(s1) ? s1 : s2;
+	let enemy = bullet == s1 ? s2 : s1;
+
+	bullet.destroy();
+}
+
 function update(delta) {
 	if (game.firstFrame) {
-		game.firstFrame = null;
+		game.firstFrame = false;
+
+		game.friendlyBulletGroup = scene.physics.add.group();
+		game.enemyBulletGroup = scene.physics.add.group();
+		game.enemyGroup = scene.physics.add.group();
+
+		scene.physics.world.addOverlap(game.friendlyBulletGroup, game.enemyGroup, bulletVenemy);
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -244,6 +258,7 @@ function update(delta) {
 		game.player = scene.physics.add.image(0, 0, "sprites", "sprites/player");
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
+		scene.physics.world.addOverlap(game.enemyBulletGroup, game.player, bulletVplayer);
 	}
 	let player = game.player;
 
@@ -298,7 +313,7 @@ function update(delta) {
 			enemy.udata.bulletDelay -= game.elapsed;
 			if (enemy.udata.bulletDelay <= 0) {
 				enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
-				// shootBullet(false,
+				shootBullet("default", enemy.x, enemy.y, degToRad(getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y)), false);
 			}
 		}
 	});
