@@ -296,6 +296,8 @@ function update(delta) {
 		let tiles = game.map.addTilesetImage("default", "tileset");
 
 		game.mapLayers[0] = game.map.createStaticLayer(0, tiles, 0, 0);
+		game.mapLayers[0].scaleX = 3;
+		game.mapLayers[0].scaleY = 3;
 
 		startLevel(1);
 	}
