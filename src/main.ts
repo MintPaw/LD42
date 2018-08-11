@@ -43,7 +43,7 @@ let game = {
 	bulletDelay: 0,
 	playerHp: 100,
 
-	lineProgress:<number> 0,
+	lineProgress:<number> 0.1,
 	linePosition:<number> 0,
 
 	firstFrame:<boolean> true,
@@ -122,8 +122,8 @@ function create() {
 }
 
 function createEnemy(enemyType, xpos, ypos) {
-	var enemy;
-	var enemyData = {
+	let enemy;
+	let enemyData = {
 		type: null,
 		hp: 10,
 		bulletDelayMax: 0,
@@ -138,14 +138,20 @@ function createEnemy(enemyType, xpos, ypos) {
 	enemyData.type = enemyType;
 	if (enemyType == "default") {
 		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
-		enemy.x = xpos;
-		enemy.y = ypos;
-		enemyData.bulletDelayMax = 0.5;
+		enemyData.bulletDelayMax = 1;
+	} else if (enemyType == "rapid") {
+		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemyData.bulletDelayMax = 0.25;
+	} else if (enemyType == "spread") {
+		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemyData.bulletDelayMax = 3;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
 	}
 
+	enemy.x = xpos;
+	enemy.y = ypos;
 	enemy.udata = enemyData;
 	game.enemies.push(enemy);
 
@@ -154,7 +160,14 @@ function createEnemy(enemyType, xpos, ypos) {
 
 function startLevel(num) {
 	if (num == 1) {
-		var en = createEnemy("default", 200, 200);
+		let en;
+		en = createEnemy("default", 100, -100);
+		en.udata.pattern = "randomWalk";
+
+		en = createEnemy("rapid", 300, -100);
+		en.udata.pattern = "randomWalk";
+
+		en = createEnemy("spread", 600, -100);
 		en.udata.pattern = "randomWalk";
 	}
 }
@@ -165,6 +178,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	let bulletData = {
 		friendly: friendly,
 		rads: degToRad(deg),
+		speed: 5,
 	};
 
 	if (bulletType == "default") {
@@ -180,26 +194,6 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	game.bullets.push(bullet);
 
 	return bullet;
-}
-
-function bulletVplayer(s1, s2) {
-	// let bullet = game.enemyBulletGroup.contains(s1) ? s1 : s2;
-	// let player = bullet == s1 ? s2 : s1;
-
-	// game.playerHp -= 1;
-	// if (game.playerHp <= 0) player.destroy();
-
-	// bullet.destroy();
-}
-
-function bulletVenemy(s1, s2) {
-	// let bullet = game.friendlyBulletGroup.contains(s1) ? s1 : s2;
-	// let enemy = bullet == s1 ? s2 : s1;
-
-	// enemy.udata.hp -= 1;
-	// if (enemy.udata.hp <= 0) enemy.destroy();
-
-	// bullet.destroy();
 }
 
 function update(delta) {
@@ -334,8 +328,8 @@ function update(delta) {
 
 	/// Update bullets
 	game.bullets.forEach(function(bullet) {
-		bullet.x += Math.cos(bullet.udata.rads) * 10;
-		bullet.y += Math.sin(bullet.udata.rads) * 10;
+		bullet.x += Math.cos(bullet.udata.rads) * bullet.udata.speed;
+		bullet.y += Math.sin(bullet.udata.rads) * bullet.udata.speed;
 		if (
 			bullet.x < -100 ||
 			bullet.y < -100 ||
@@ -370,26 +364,44 @@ function update(delta) {
 
 	/// Update enemies
 	game.enemyGroup.getChildren().forEach(function(enemy) {
-		if (enemy.udata.type == "default") {
-			enemy.udata.bulletDelay -= game.elapsed;
-			if (enemy.udata.bulletDelay <= 0) {
-				enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
+		enemy.udata.bulletDelay -= game.elapsed;
+		if (enemy.udata.bulletDelay <= 0) {
+			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
+			if (enemy.y < enemy.height/2) return; // continue
+			if (enemy.udata.type == "default") {
 				shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+			}
+
+			if (enemy.udata.type == "rapid") {
+				let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-10, 10), false);
+				bullet.udata.speed = 10;
+			}
+
+			if (enemy.udata.type == "spread") {
+				let shots = 10;
+				for (let i = 0; i < shots; i++) {
+					let startOff = -30;
+					let endOff = 30;
+					let angleOff = map(i, 0, shots, startOff, endOff);
+
+					let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
+					bullet.udata.speed = 2;
+				}
 			}
 		}
 
 		if (enemy.udata.pattern == "randomWalk") {
-			var dist = getDistanceBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY);
+			let dist = getDistanceBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY);
 			if (enemy.udata.nextPosX == 0 || dist < 10) {
 				enemy.udata.walkPasueTime -= game.elapsed;
 				enemy.setVelocity(0, 0);
 				if (enemy.udata.walkPasueTime <= 0) {
 					enemy.udata.walkPasueTime = enemy.udata.walkPasueTimeMax;
 					enemy.udata.nextPosX = rnd(0, game.width);
-					enemy.udata.nextPosY = rnd(0, game.linePosition);
+					enemy.udata.nextPosY = rnd(enemy.height/2, game.linePosition);
 				}
 			} else {
-				var rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
+				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				enemy.setVelocity(Math.cos(rads) * 100, Math.sin(rads) * 100);
 			}
 		} else if (enemy.udata.pattern == "none") {
