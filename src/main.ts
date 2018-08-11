@@ -186,6 +186,12 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 
 	if (bulletType == "default") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+	} else if (bulletType == "dot") {
+		bullet = scene.add.sprite(0, 0, "projectile2").play("projectile2");
+	} else if (bulletType == "rocket") {
+		bullet = scene.add.sprite(0, 0, "projectile3").play("projectile3");
+	} else if (bulletType == "beam") {
+		bullet = scene.add.sprite(0, 0, "projectile4").play("projectile4");
 	} else {
 		log("Unknown bullet type "+bulletType);
 	}
@@ -203,19 +209,20 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		scene.anims.create({
-			key: "explosion1",
-			frames: this.anims.generateFrameNumbers("explosion1", { start: 0, end: 3, first: 3 }),
-			frameRate: 20,
-			repeat: -1
-		});
+		function createAnim(name, numFrames) {
+			scene.anims.create({
+				key: name,
+				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
+				frameRate: 20,
+				repeat: -1
+			});
+		}
 
-		scene.anims.create({
-			key: "projectile1",
-			frames: this.anims.generateFrameNumbers("projectile1", { start: 0, end: 3, first: 3 }),
-			frameRate: 20,
-			repeat: -1
-		});
+		createAnim("explosion1", 3);
+		createAnim("projectile1", 3);
+		createAnim("projectile2", 3);
+		createAnim("projectile3", 3);
+		createAnim("projectile4", 3);
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -370,11 +377,11 @@ function update(delta) {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
 			if (enemy.y < enemy.height/2) return; // continue
 			if (enemy.udata.type == "default") {
-				shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+				shootBullet("beam", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
 			}
 
 			if (enemy.udata.type == "rapid") {
-				let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-10, 10), false);
+				let bullet = shootBullet("dot", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-10, 10), false);
 				bullet.udata.speed = 10;
 			}
 
@@ -404,7 +411,6 @@ function update(delta) {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				enemy.x += Math.cos(rads) * enemy.udata.walkSpeed;
 				enemy.y += Math.sin(rads) * enemy.udata.walkSpeed;
-				// enemy.setVelocity(Math.cos(rads) * 100, Math.sin(rads) * 100);
 			}
 		} else if (enemy.udata.pattern == "none") {
 			// None
