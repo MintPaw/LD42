@@ -88,6 +88,7 @@ function preload() {
 	scene.load.spritesheet("projectile4", "assets/projectile4.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("playerIdle", "assets/playerIdle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("playerWalk", "assets/playerWalk.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("playerDeath", "assets/playerDeath.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("enemy1Idle", "assets/enemy1Idle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("enemy1Attack", "assets/enemy1Attack.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("enemy1Death", "assets/enemy1Death.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
@@ -136,8 +137,13 @@ function createHpBar(target) {
 	game.hpBars.push(hpBar);
 }
 
+function playerAnimCallback(anim) {
+	if (anim.key == "playerDeath") game.player.destroy();
+}
+
 function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
+	if (anim.key == "enemy1Death") enemy.destroy();
 }
 
 function createEnemy(enemyType, xpos, ypos) {
@@ -236,7 +242,7 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		function createAnim(name, numFrames, repeat=-1, frameRate=10) {
+		function createAnim(name, numFrames, repeat=-1, frameRate=3) {
 			scene.anims.create({
 				key: name,
 				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
@@ -252,7 +258,7 @@ function update(delta) {
 		createAnim("projectile4", 3);
 		createAnim("playerIdle", 3);
 		createAnim("playerWalk", 3);
-		createAnim("playerDeath", 3);
+		createAnim("playerDeath", 3, 0);
 		createAnim("enemy1Idle", 3);
 		createAnim("enemy1Attack", 3, 0);
 		createAnim("enemy1Death", 3, 0);
@@ -330,6 +336,7 @@ function update(delta) {
 			hp: 100,
 			maxHp: 100,
 		};
+		game.player.on("animationcomplete", playerAnimCallback);
 		createHpBar(game.player);
 	}
 	let player = game.player;
@@ -345,10 +352,12 @@ function update(delta) {
 	if (player.x < player.width/2) player.x = player.width/2;
 	if (player.x > game.width - player.width/2) player.x = game.width - player.width/2;
 
-	if (up || down || left || right) {
-		player.anims.play("playerWalk", true);
-	} else {
-		player.anims.play("playerIdle", true);
+	if (player.udata.hp > 0) {
+		if (up || down || left || right) {
+			player.anims.play("playerWalk", true);
+		} else {
+			player.anims.play("playerIdle", true);
+		}
 	}
 
 	if (game.mouseX < player.x) player.scaleX = -1;
@@ -368,7 +377,7 @@ function update(delta) {
 	gun.angle = mouseDeg - 90;
 
 	game.bulletDelay -= game.elapsed;
-	if (game.mouseDown && game.bulletDelay <= 0) {
+	if (game.mouseDown && game.bulletDelay <= 0 && gun.active) {
 		game.bulletDelay = 0.25;
 		let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
 		bullet.udata.speed = 20;
@@ -392,7 +401,7 @@ function update(delta) {
 				let tl = enemy.getTopLeft();
 				if (rectContainsPoint(tl.x, tl.y, enemy.width, enemy.height, bullet.x, bullet.y)) {
 					enemy.udata.hp -= 1;
-					if (enemy.udata.hp <= 0) enemy.destroy();
+					if (enemy.udata.hp <= 0) enemy.anims.play("enemy1Death", true);
 					bullet.destroy();
 				}
 			});
@@ -400,7 +409,10 @@ function update(delta) {
 			let tl = player.getTopLeft();
 			if (rectContainsPoint(tl.x, tl.y, player.width, player.height, bullet.x, bullet.y)) {
 				game.player.udata.hp -= 1;
-				if (game.player.udata.hp <= 0) player.destroy();
+				if (game.player.udata.hp <= 0) {
+					gun.destroy();
+					player.anims.play("playerDeath", true);
+				}
 				bullet.destroy();
 			}
 		}
