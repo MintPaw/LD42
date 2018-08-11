@@ -35,6 +35,7 @@ let game = {
 	bullets: [],
 	enemies: [],
 	hpBars: [],
+	currentWeapon: 0,
 
 	map: null,
 	mapLayers: [],
@@ -65,6 +66,9 @@ let game = {
 	keyLeft: null,
 	keyRight: null,
 	keySpace: null,
+	key1: null,
+	key2: null,
+	key3: null,
 
 	// beepSound: null,
 }
@@ -160,6 +164,8 @@ function createEnemy(enemyType, xpos, ypos) {
 		walkPasueTimeMax: 1,
 		walkPasueTime: 0,
 		walkSpeed: 3,
+		fireTicks: 0,
+		iceTicks: 0,
 	};
 
 	enemyData.type = enemyType;
@@ -212,6 +218,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	let bullet;
 
 	let bulletData = {
+		type: bulletType,
 		friendly: friendly,
 		rads: degToRad(deg),
 		speed: 5,
@@ -225,6 +232,10 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		bullet = scene.add.sprite(0, 0, "projectile3").play("projectile3");
 	} else if (bulletType == "beam") {
 		bullet = scene.add.sprite(0, 0, "projectile4").play("projectile4");
+	} else if (bulletType == "fire") {
+		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+	} else if (bulletType == "ice") {
+		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else {
 		log("Unknown bullet type "+bulletType);
 	}
@@ -236,6 +247,30 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	game.bullets.push(bullet);
 
 	return bullet;
+}
+
+function dealDamage(unit, bullet) {
+	unit.hp -= 1;
+	if (bullet.udata.type == "fire") {
+		unit.udata.fireTicks += 60;
+	}
+
+	if (bullet.udata.type == "ice") {
+		unit.udata.iceTicks += 120;
+	}
+}
+
+function tickEffects(unit) {
+	if (unit.udata.fireTicks > 0) {
+		unit.udata.fireTicks--;
+		unit.udata.hp -= 1/60;
+		unit.tint = 0x88FF0000;
+	} else if (unit.udata.iceTicks > 0) {
+		unit.udata.iceTicks--;
+		unit.tint = 0x880000FF;
+	} else {
+		unit.tint = 0;
+	}
 }
 
 function update(delta) {
@@ -276,6 +311,9 @@ function update(delta) {
 		game.keyLeft = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
 		game.keyRight = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
 		game.keySpace = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+		game.key1 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+		game.key2 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
+		game.key3 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
 
 		scene.input.on("pointermove", function (pointer) {
 			game.mouseX = pointer.x;
@@ -316,6 +354,10 @@ function update(delta) {
 	if (game.keyD.isDown || game.keyRight.isDown) right = true;
 	if (game.keySpace.isDown) space = true;
 
+	if (game.key1.isDown) game.currentWeapon = 0;
+	if (game.key2.isDown) game.currentWeapon = 1;
+	if (game.key3.isDown) game.currentWeapon = 2;
+
 	if (space) {
 		// game.beepSound.play();
 	}
@@ -337,6 +379,8 @@ function update(delta) {
 		game.player.udata = {
 			hp: 100,
 			maxHp: 100,
+			fireTicks: 0,
+			iceTicks: 0,
 		};
 		game.player.on("animationcomplete", playerAnimCallback);
 		createHpBar(game.player);
@@ -344,6 +388,7 @@ function update(delta) {
 	let player = game.player;
 
 	let speed = 5;
+	if (player.udata.iceTicks) speed /= 2;
 	if (up) player.y -= speed;
 	if (down) player.y += speed;
 	if (left) player.x -= speed;
@@ -365,6 +410,8 @@ function update(delta) {
 	if (game.mouseX < player.x) player.scaleX = -1;
 	if (game.mouseX > player.x) player.scaleX = 1;
 
+	tickEffects(player);
+
 	let mouseDeg = Math.atan2(game.mouseX - player.x, -(game.mouseY - player.y))*(180/Math.PI) - 90;
 	let mouseRad = degToRad(mouseDeg);
 
@@ -381,8 +428,16 @@ function update(delta) {
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0 && gun.active) {
 		game.bulletDelay = 0.25;
-		let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
-		bullet.udata.speed = 20;
+		if (game.currentWeapon == 0) {
+			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
+			bullet.udata.speed = 10;
+		} else if (game.currentWeapon == 1) {
+			let bullet = shootBullet("fire", gun.x, gun.y, mouseDeg, true);
+			bullet.udata.speed = 20;
+		} else if (game.currentWeapon == 2) {
+			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
+			bullet.udata.speed = 5;
+		}
 	}
 
 	/// Update bullets
@@ -400,17 +455,15 @@ function update(delta) {
 
 		if (bullet.udata.friendly) {
 			game.enemies.forEach(function(enemy) {
-				let tl = enemy.getTopLeft();
-				if (rectContainsPoint(tl.x, tl.y, enemy.width, enemy.height, bullet.x, bullet.y)) {
-					enemy.udata.hp -= 1;
+				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
+					dealDamage(enemy, bullet);
 					if (enemy.udata.hp <= 0) enemy.anims.play("enemy1Death", true);
 					bullet.destroy();
 				}
 			});
 		} else {
-			let tl = player.getTopLeft();
-			if (rectContainsPoint(tl.x, tl.y, player.width, player.height, bullet.x, bullet.y)) {
-				game.player.udata.hp -= 1;
+			if (rectContainsPoint(player.x - player.width/2, player.y - player.height/2, player.width, player.height, bullet.x, bullet.y)) {
+				dealDamage(player, bullet);
 				if (game.player.udata.hp <= 0) {
 					gun.destroy();
 					player.anims.play("playerDeath", true);
@@ -426,6 +479,7 @@ function update(delta) {
 
 	/// Update enemies
 	game.enemies.forEach(function(enemy) {
+		tickEffects(enemy);
 		enemy.udata.bulletDelay -= game.elapsed;
 		if (enemy.udata.bulletDelay <= 0) {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
@@ -466,8 +520,10 @@ function update(delta) {
 				}
 			} else {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
-				enemy.x += Math.cos(rads) * enemy.udata.walkSpeed;
-				enemy.y += Math.sin(rads) * enemy.udata.walkSpeed;
+				let speed = enemy.udata.walkSpeed;
+				if (enemy.udata.iceTicks) speed /= 2;
+				enemy.x += Math.cos(rads) * speed;
+				enemy.y += Math.sin(rads) * speed;
 			}
 		} else if (enemy.udata.pattern == "none") {
 			// None
