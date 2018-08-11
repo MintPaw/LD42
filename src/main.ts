@@ -35,6 +35,7 @@ let game = {
 
 	bullets: [],
 	enemyGroup: null,
+	enemies: [],
 
 	map: null,
 	mapLayers: [],
@@ -146,6 +147,7 @@ function createEnemy(enemyType, xpos, ypos) {
 	}
 
 	enemy.udata = enemyData;
+	game.enemies.push(enemy);
 
 	return enemy;
 }
@@ -342,6 +344,28 @@ function update(delta) {
 		) {
 			bullet.destroy();
 		}
+
+		if (bullet.udata.friendly) {
+			game.enemies.forEach(function(enemy) {
+				let tl = enemy.getTopLeft();
+				if (rectContainsPoint(tl.x, tl.y, enemy.width, enemy.height, bullet.x, bullet.y)) {
+					enemy.udata.hp -= 1;
+					if (enemy.udata.hp <= 0) enemy.destroy();
+					bullet.destroy();
+				}
+			});
+		} else {
+			let tl = player.getTopLeft();
+			if (rectContainsPoint(tl.x, tl.y, player.width, player.height, bullet.x, bullet.y)) {
+				game.playerHp -= 1;
+				if (game.playerHp <= 0) player.destroy();
+				bullet.destroy();
+			}
+		}
+	});
+
+	game.bullets = game.bullets.filter(function(bullet) {
+		return bullet.active;
 	});
 
 	/// Update enemies

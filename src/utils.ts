@@ -1,4 +1,5 @@
 let Vector2 = Phaser.Math.Vector2;
+let Rect = Phaser.Geom.Rectangle;
 let log = console.log;
 
 function scaleSpriteToSize(spr, newWidth, newHeight, keepRatio) {
@@ -72,4 +73,8 @@ function clampMap(value, sourceMin, sourceMax, destMin, destMax) {
 	let perc = norm(value, sourceMin, sourceMax);
 	perc = clamp(perc, 0, 1);
 	return lerp(perc, destMin, destMax);
+}
+
+function rectContainsPoint(rx, ry, rw, rh, px, py) {
+	return px >= rx && px <= rx+(rw-1) && py >= ry && py <= ry+(rh-1);
 }
