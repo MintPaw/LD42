@@ -34,7 +34,6 @@ let game = {
 	hpBar: null,
 
 	bullets: [],
-	enemyGroup: null,
 	enemies: [],
 
 	map: null,
@@ -132,19 +131,23 @@ function createEnemy(enemyType, xpos, ypos) {
 		nextPosX: 0,
 		nextPosY: 0,
 		walkPasueTimeMax: 1,
-		walkPasueTime: 0
+		walkPasueTime: 0,
+		walkSpeed: 3,
 	};
 
 	enemyData.type = enemyType;
 	if (enemyType == "default") {
-		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
 		enemyData.bulletDelayMax = 1;
+		enemyData.walkSpeed = 2;
 	} else if (enemyType == "rapid") {
-		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
 		enemyData.bulletDelayMax = 0.25;
+		enemyData.walkSpeed = 3;
 	} else if (enemyType == "spread") {
-		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
 		enemyData.bulletDelayMax = 3;
+		enemyData.walkSpeed = 1;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
@@ -213,8 +216,6 @@ function update(delta) {
 			frameRate: 20,
 			repeat: -1
 		});
-
-		game.enemyGroup = scene.physics.add.group();
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -363,7 +364,7 @@ function update(delta) {
 	});
 
 	/// Update enemies
-	game.enemyGroup.getChildren().forEach(function(enemy) {
+	game.enemies.forEach(function(enemy) {
 		enemy.udata.bulletDelay -= game.elapsed;
 		if (enemy.udata.bulletDelay <= 0) {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
@@ -378,7 +379,7 @@ function update(delta) {
 			}
 
 			if (enemy.udata.type == "spread") {
-				let shots = 10;
+				let shots = 5;
 				for (let i = 0; i < shots; i++) {
 					let startOff = -30;
 					let endOff = 30;
@@ -394,7 +395,6 @@ function update(delta) {
 			let dist = getDistanceBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY);
 			if (enemy.udata.nextPosX == 0 || dist < 10) {
 				enemy.udata.walkPasueTime -= game.elapsed;
-				enemy.setVelocity(0, 0);
 				if (enemy.udata.walkPasueTime <= 0) {
 					enemy.udata.walkPasueTime = enemy.udata.walkPasueTimeMax;
 					enemy.udata.nextPosX = rnd(0, game.width);
@@ -402,15 +402,19 @@ function update(delta) {
 				}
 			} else {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
-				enemy.setVelocity(Math.cos(rads) * 100, Math.sin(rads) * 100);
+				enemy.x += Math.cos(rads) * enemy.udata.walkSpeed;
+				enemy.y += Math.sin(rads) * enemy.udata.walkSpeed;
+				// enemy.setVelocity(Math.cos(rads) * 100, Math.sin(rads) * 100);
 			}
 		} else if (enemy.udata.pattern == "none") {
 			// None
 		}	else {
 			log("Unknown pattern "+enemy.udata.pattern);
 		}
+	});
 
-		if (!enemy.active) game.enemyGroup.remove(enemy);
+	game.enemies = game.enemies.filter(function(enemy) {
+		return enemy.active;
 	});
 
 	{ /// Reset inputs
