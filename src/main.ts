@@ -260,7 +260,7 @@ function update(delta) {
 		createAnim("playerWalk", 3);
 		createAnim("playerDeath", 3, 0);
 		createAnim("enemy1Idle", 3);
-		createAnim("enemy1Attack", 3, 0);
+		createAnim("enemy1Attack", 3, 0, 20);
 		createAnim("enemy1Death", 3, 0);
 
 		game.width = phaser.canvas.width;
