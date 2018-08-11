@@ -337,20 +337,19 @@ function update(delta) {
 		player.anims.play("playerIdle", true);
 	}
 
-	if (left && player.scaleX != -1) player.scaleX = -1;
-	if (right && player.scaleX != 1) player.scaleX = 1;
+	if (game.mouseX < player.x) player.scaleX = -1;
+	if (game.mouseX > player.x) player.scaleX = 1;
 
 	let mouseDeg = Math.atan2(game.mouseX - player.x, -(game.mouseY - player.y))*(180/Math.PI) - 90;
 	let mouseRad = degToRad(mouseDeg);
 
 	if (!game.gun) {
-		game.gun = scene.physics.add.image(0, 0, "sprites", "sprites/gun");
+		game.gun = scene.add.image(0, 0, "sprites", "sprites/playerArm");
 	}
 	let gun = game.gun;
 
-	gun.alpha = 0.25;
-	gun.setOrigin(0.5, 0.15);
-	gun.x = player.x + player.width*0.25;
+	gun.setOrigin(0.5, 0.3);
+	gun.x = player.x;
 	gun.y = player.y;
 	gun.angle = mouseDeg - 90;
 
