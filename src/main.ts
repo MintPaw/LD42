@@ -402,7 +402,7 @@ function update(delta) {
 	let player = game.player;
 
 	let speed = 5;
-	if (player.udata.iceTicks) speed /= 2;
+	if (player.udata.iceTicks) speed /= player.udata.iceTicks/60;
 	if (up) player.y -= speed;
 	if (down) player.y += speed;
 	if (left) player.x -= speed;
@@ -539,7 +539,7 @@ function update(delta) {
 			} else {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				let speed = enemy.udata.walkSpeed;
-				if (enemy.udata.iceTicks) speed /= 2;
+				if (enemy.udata.iceTicks) speed /= enemy.udata.iceTicks/60;
 				enemy.x += Math.cos(rads) * speed;
 				enemy.y += Math.sin(rads) * speed;
 			}
