@@ -41,3 +41,28 @@ function degToRad(deg) {
 function radToDeg(rad) {
 	return rad * 57.2958;
 }
+
+function lerp(perc, min, max) {
+	return min + (max - min) * perc;
+}
+
+function clamp(value, min, max) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
+function norm(value, min, max) {
+	return (value-min)/(max-min);
+}
+
+function map(value, sourceMin, sourceMax, destMin, destMax) {
+	let perc = norm(value, sourceMin, sourceMax);
+	return lerp(perc, destMin, destMax);
+}
+
+function clampMap(value, sourceMin, sourceMax, destMin, destMax) {
+	let perc = norm(value, sourceMin, sourceMax);
+	perc = clamp(perc, 0, 1);
+	return lerp(perc, destMin, destMax);
+}

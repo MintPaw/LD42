@@ -30,9 +30,16 @@ let phaser = new Phaser.Game(config);
 
 let game = {
 	player: null,
+	gun: null,
 	lineGraphic: null,
 
+	bulletGroup: null,
+
+	bulletDelay: 0,
+
 	lineProgress:<number> 0,
+	linePosition:<number> 0,
+
 	firstFrame:<boolean> true,
 	width:<number> 0,
 	height:<number> 0,
@@ -81,7 +88,7 @@ function create() {
 	// game.beepSound = scene.sound.add("beep", { loop: false });
 
 	{ /// Setup game and groups
-		// game.bulletGroup = scene.physics.add.group();
+		game.bulletGroup = scene.physics.add.group();
 		// game.enemyBulletsGroup = scene.physics.add.group();
 		// game.baseGroup = scene.physics.add.group();
 		// game.enemyGroup = scene.physics.add.group();
@@ -175,31 +182,56 @@ function update(delta) {
 		// game.beepSound.play();
 	}
 
-	game.lineProgress += 0.05;
+	game.lineProgress += 0.001;
+	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
 
-	if (!game.lineGraphic) { /// Setup player
+	if (!game.lineGraphic) {
 		game.lineGraphic = scene.add.graphics({lineStyle: {width: 4, color: 0xaa00aa}});
 		game.lineGraphic.strokeLineShape(new Phaser.Geom.Line(0, 0, game.width, 0));
 	}
 	game.lineGraphic.x = 0;
-	game.lineGraphic.y = game.lineProgress;
+	game.lineGraphic.y = game.linePosition;
 
-	if (!game.player) { /// Setup player
+	if (!game.player) {
 		game.player = scene.physics.add.image(0, 0, "sprites", "sprites/player");
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
 	}
+	let player = game.player;
 
 	let speed = 5;
-	if (up) game.player.y -= speed;
-	if (down) game.player.y += speed;
-	if (left) game.player.x -= speed;
-	if (right) game.player.x += speed;
+	if (up) player.y -= speed;
+	if (down) player.y += speed;
+	if (left) player.x -= speed;
+	if (right) player.x += speed;
 
-	if (game.player.y < game.lineProgress + game.player.height/2) game.player.y = game.lineProgress + game.player.height/2;
-	if (game.player.y > game.height - game.player.height/2) game.player.y = game.height - game.player.height/2;
-	if (game.player.x < game.player.width/2) game.player.x = game.player.width/2;
-	if (game.player.x > game.width - game.player.width/2) game.player.x = game.width - game.player.width/2;
+	if (player.y < game.linePosition + player.height/2) player.y = game.linePosition + player.height/2;
+	if (player.y > game.height - player.height/2) player.y = game.height - player.height/2;
+	if (player.x < player.width/2) player.x = player.width/2;
+	if (player.x > game.width - player.width/2) player.x = game.width - player.width/2;
+
+	let mouseDeg = Math.atan2(game.mouseX - player.x, -(game.mouseY - player.y))*(180/Math.PI) - 90;
+	let mouseRad = degToRad(mouseDeg);
+
+	if (!game.gun) {
+		game.gun = scene.physics.add.image(0, 0, "sprites", "sprites/gun");
+	}
+	let gun = game.gun;
+
+	gun.setOrigin(0.5, 0.15);
+	gun.x = player.x + player.width*0.25;
+	gun.y = player.y;
+	gun.angle = mouseDeg - 90;
+
+	game.bulletDelay -= game.elapsed;
+	if (game.mouseDown && game.bulletDelay <= 0) {
+		game.bulletDelay = 0.25;
+		let bullet = game.bulletGroup.create(0, 0, "sprites", "sprites/bullet");
+		bullet.x = gun.x;
+		bullet.y = gun.y;
+		bullet.angle = gun.angle;
+		bullet.setVelocity(Math.cos(mouseRad) * 1000, Math.sin(mouseRad) * 1000);
+	}
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
