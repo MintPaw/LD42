@@ -10,8 +10,12 @@ b:
 	mkdir bin/assets
 	-cd sourceAssets; \
 		$(PACKER) --powerOf2 --format pixijs sprites ../bin/assets
-	$(MAKE) buildSounds
+	-mkdir bin/assets/audio
+	cp sourceAssets/audio/* bin/assets/audio
+	cp -r sourceAssets/maps bin/assets
+	cp sourceAssets/tileset.png bin/assets
 	cp buildSystem/phaser.d.ts src
+	
 	tsc src/*.ts --outdir bin
 	cp buildSystem/phaser.js bin
 	cp buildSystem/index.html bin
@@ -22,8 +26,6 @@ r:
 buildSounds:
 	# cd bin/assets; \
 	# 	audiosprite --path audio.json --output audio ../../sourceAssets/audio/*
-	-mkdir bin/assets/audio
-	cp sourceAssets/audio/* bin/assets/audio
 
 ship:
 	cd /d/mintpaw.github.io; \
