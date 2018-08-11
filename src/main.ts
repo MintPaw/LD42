@@ -31,16 +31,15 @@ let game = {
 	player: null,
 	gun: null,
 	lineGraphic: null,
-	hpBar: null,
 
 	bullets: [],
 	enemies: [],
+	hpBars: [],
 
 	map: null,
 	mapLayers: [],
 
 	bulletDelay: 0,
-	playerHp: 100,
 
 	lineProgress:<number> 0.1,
 	linePosition:<number> 0,
@@ -120,11 +119,24 @@ function create() {
 	}
 }
 
+function createHpBar(target) {
+	let hpBarBg = scene.add.image(0, 0, "sprites", "sprites/hpBarBg");
+	let hpBar = scene.add.image(0, 0, "sprites", "sprites/hpBar");
+
+	hpBar.udata = {
+		target: target,
+		bg: hpBarBg,
+	};
+
+	game.hpBars.push(hpBar);
+}
+
 function createEnemy(enemyType, xpos, ypos) {
 	let enemy;
 	let enemyData = {
 		type: null,
 		hp: 10,
+		maxHp: 10,
 		bulletDelayMax: 0,
 		bulletDelay: 0,
 		pattern: "none",
@@ -158,6 +170,7 @@ function createEnemy(enemyType, xpos, ypos) {
 	enemy.udata = enemyData;
 	game.enemies.push(enemy);
 
+	createHpBar(enemy);
 	return enemy;
 }
 
@@ -290,9 +303,14 @@ function update(delta) {
 	game.lineGraphic.y = game.linePosition;
 
 	if (!game.player) {
-		game.player = scene.physics.add.image(0, 0, "sprites", "sprites/player");
+		game.player = scene.add.image(0, 0, "sprites", "sprites/player");
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
+		game.player.udata = {
+			hp: 100,
+			maxHp: 100,
+		};
+		createHpBar(game.player);
 	}
 	let player = game.player;
 
@@ -326,14 +344,6 @@ function update(delta) {
 		shootBullet("default", gun.x, gun.y, mouseDeg, true);
 	}
 
-	if (!game.hpBar) {
-		game.hpBar = scene.add.image(0, 0, "sprites", "sprites/hpBar");
-	}
-
-	game.hpBar.scaleX = game.playerHp/100;
-	game.hpBar.x = game.width/2;
-	game.hpBar.y = game.height - game.hpBar.height - 10;
-
 	/// Update bullets
 	game.bullets.forEach(function(bullet) {
 		bullet.x += Math.cos(bullet.udata.rads) * bullet.udata.speed;
@@ -359,8 +369,8 @@ function update(delta) {
 		} else {
 			let tl = player.getTopLeft();
 			if (rectContainsPoint(tl.x, tl.y, player.width, player.height, bullet.x, bullet.y)) {
-				game.playerHp -= 1;
-				if (game.playerHp <= 0) player.destroy();
+				game.player.udata.hp -= 1;
+				if (game.player.udata.hp <= 0) player.destroy();
 				bullet.destroy();
 			}
 		}
@@ -422,6 +432,26 @@ function update(delta) {
 	game.enemies = game.enemies.filter(function(enemy) {
 		return enemy.active;
 	});
+
+	/// Update hp bars
+	game.hpBars.forEach(function(hpBar) {
+		let target = hpBar.udata.target;
+		hpBar.x = target.x;
+		hpBar.y = target.y - target.height/2 - 20;
+		hpBar.udata.bg.x = hpBar.x;
+		hpBar.udata.bg.y = hpBar.y;
+
+		hpBar.scaleX = target.udata.hp/target.udata.maxHp;
+		if (target.udata.hp <= 0) {
+			hpBar.udata.bg.destroy();
+			hpBar.destroy();
+		}
+	});
+
+	game.hpBars = game.hpBars.filter(function(hpBar) {
+		return hpBar.active;
+	});
+
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
