@@ -124,6 +124,11 @@ function createEnemy(enemyType, xpos, ypos) {
 		type: null,
 		bulletDelayMax: 0,
 		bulletDelay: 0,
+		pattern: "none",
+		nextPosX: 0,
+		nextPosY: 0,
+		walkPasueTimeMax: 1,
+		walkPasueTime: 0
 	};
 
 	enemyData.type = enemyType;
@@ -144,7 +149,8 @@ function createEnemy(enemyType, xpos, ypos) {
 
 function startLevel(num) {
 	if (num == 1) {
-		createEnemy("stand", 200, 200);
+		var en = createEnemy("stand", 200, 200);
+		en.udata.pattern = "randomWalk";
 	}
 }
 
@@ -315,6 +321,26 @@ function update(delta) {
 				enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
 				shootBullet("default", enemy.x, enemy.y, degToRad(getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y)), false);
 			}
+		}
+
+		if (enemy.udata.pattern == "randomWalk") {
+			var dist = getDistanceBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY);
+			if (enemy.udata.nextPosX == 0 || dist < 10) {
+				enemy.udata.walkPasueTime -= game.elapsed;
+				enemy.setVelocity(0, 0);
+				if (enemy.udata.walkPasueTime <= 0) {
+					enemy.udata.walkPasueTime = enemy.udata.walkPasueTimeMax;
+					enemy.udata.nextPosX = rnd(0, game.width);
+					enemy.udata.nextPosY = rnd(0, game.linePosition);
+				}
+			} else {
+				var rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
+				enemy.setVelocity(Math.cos(rads) * 100, Math.sin(rads) * 100);
+			}
+		} else if (enemy.udata.pattern == "none") {
+			// None
+		}	else {
+			log("Unknown pattern "+enemy.udata.pattern);
 		}
 	});
 

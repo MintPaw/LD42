@@ -31,6 +31,12 @@ function getAngleBetweenCoords(x1, y1, x2, y2) {
 	return angle;
 }
 
+function getDistanceBetweenCoords(x1, y1, x2, y2) {
+	let a = x1 - x2;
+	let b = y1 - y2;
+	return Math.sqrt(a*a + b*b);
+}
+
 function getDistanceBetween(spr1, spr2) {
 	return spr1.getCenter().distance(spr2.getCenter());
 }
