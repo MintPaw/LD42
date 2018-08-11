@@ -86,6 +86,9 @@ function preload() {
 	scene.load.spritesheet("projectile2", "assets/projectile2.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("projectile3", "assets/projectile3.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("projectile4", "assets/projectile4.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("playerIdle", "assets/playerIdle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("playerWalk", "assets/playerWalk.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 32, endFrame: 7 });
 
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
@@ -236,6 +239,9 @@ function update(delta) {
 		createAnim("projectile2", 3);
 		createAnim("projectile3", 3);
 		createAnim("projectile4", 3);
+		createAnim("playerIdle", 3);
+		createAnim("playerWalk", 3);
+		createAnim("playerDeath", 3);
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -303,7 +309,7 @@ function update(delta) {
 	game.lineGraphic.y = game.linePosition;
 
 	if (!game.player) {
-		game.player = scene.add.image(0, 0, "sprites", "sprites/player");
+		game.player = scene.add.sprite(0, 0, "playerIdle").play("playerIdle");
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
 		game.player.udata = {
@@ -325,6 +331,15 @@ function update(delta) {
 	if (player.x < player.width/2) player.x = player.width/2;
 	if (player.x > game.width - player.width/2) player.x = game.width - player.width/2;
 
+	if (up || down || left || right) {
+		player.anims.play("playerWalk", true);
+	} else {
+		player.anims.play("playerIdle", true);
+	}
+
+	if (left && player.scaleX != -1) player.scaleX = -1;
+	if (right && player.scaleX != 1) player.scaleX = 1;
+
 	let mouseDeg = Math.atan2(game.mouseX - player.x, -(game.mouseY - player.y))*(180/Math.PI) - 90;
 	let mouseRad = degToRad(mouseDeg);
 
@@ -333,6 +348,7 @@ function update(delta) {
 	}
 	let gun = game.gun;
 
+	gun.alpha = 0.25;
 	gun.setOrigin(0.5, 0.15);
 	gun.x = player.x + player.width*0.25;
 	gun.y = player.y;
