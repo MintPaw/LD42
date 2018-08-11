@@ -69,6 +69,7 @@ let game = {
 	key1: null,
 	key2: null,
 	key3: null,
+	key4: null,
 
 	// beepSound: null,
 }
@@ -222,6 +223,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		friendly: friendly,
 		rads: degToRad(deg),
 		speed: 5,
+		ignoreEnemy: null,
 	};
 
 	if (bulletType == "default") {
@@ -235,6 +237,8 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	} else if (bulletType == "fire") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else if (bulletType == "ice") {
+		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+	} else if (bulletType == "lightning") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else {
 		log("Unknown bullet type "+bulletType);
@@ -250,13 +254,21 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 }
 
 function dealDamage(unit, bullet) {
-	unit.hp -= 1;
+	unit.udata.hp -= 1;
 	if (bullet.udata.type == "fire") {
 		unit.udata.fireTicks += 60;
 	}
 
 	if (bullet.udata.type == "ice") {
 		unit.udata.iceTicks += 120;
+	}
+
+	if (bullet.udata.type == "lightning") {
+		let angles = [45, 90+45, 180+45, 270+45];
+		for (let i = 0; i < angles.length; i++) {
+			let bullet = shootBullet("default", unit.x, unit.y, angles[i], true);
+			bullet.udata.ignoreEnemy = unit;
+		}
 	}
 }
 
@@ -269,7 +281,7 @@ function tickEffects(unit) {
 		unit.udata.iceTicks--;
 		unit.tint = 0x880000FF;
 	} else {
-		unit.tint = 0;
+		unit.tint = 0xFF000000;
 	}
 }
 
@@ -314,6 +326,7 @@ function update(delta) {
 		game.key1 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
 		game.key2 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
 		game.key3 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+		game.key4 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
 		scene.input.on("pointermove", function (pointer) {
 			game.mouseX = pointer.x;
@@ -357,6 +370,7 @@ function update(delta) {
 	if (game.key1.isDown) game.currentWeapon = 0;
 	if (game.key2.isDown) game.currentWeapon = 1;
 	if (game.key3.isDown) game.currentWeapon = 2;
+	if (game.key4.isDown) game.currentWeapon = 3;
 
 	if (space) {
 		// game.beepSound.play();
@@ -436,6 +450,9 @@ function update(delta) {
 			bullet.udata.speed = 20;
 		} else if (game.currentWeapon == 2) {
 			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
+			bullet.udata.speed = 10;
+		} else if (game.currentWeapon == 3) {
+			let bullet = shootBullet("lightning", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 5;
 		}
 	}
@@ -455,6 +472,7 @@ function update(delta) {
 
 		if (bullet.udata.friendly) {
 			game.enemies.forEach(function(enemy) {
+				if (bullet.udata.ignoreEnemy == enemy) return;
 				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
 					dealDamage(enemy, bullet);
 					if (enemy.udata.hp <= 0) enemy.anims.play("enemy1Death", true);
