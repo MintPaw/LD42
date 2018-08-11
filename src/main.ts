@@ -32,7 +32,9 @@ let game = {
 	gun: null,
 	lineGraphic: null,
 
-	bulletGroup: null,
+	friendlyBulletGroup: null,
+	enemyBulletGroup: null,
+	enemyGroup: null,
 
 	bulletDelay: 0,
 
@@ -87,14 +89,9 @@ function create() {
 	// game.beepSound = scene.sound.add("beep", { loop: false });
 
 	{ /// Setup game and groups
-		game.bulletGroup = scene.physics.add.group();
-		// game.enemyBulletsGroup = scene.physics.add.group();
-		// game.baseGroup = scene.physics.add.group();
-		// game.enemyGroup = scene.physics.add.group();
-		// game.moneyGroup = scene.physics.add.group();
-
-		// game.minimapGroup = scene.add.group();
-		// game.hpGroup = scene.add.group();
+		game.friendlyBulletGroup = scene.physics.add.group();
+		game.enemyBulletGroup = scene.physics.add.group();
+		game.enemyGroup = scene.physics.add.group();
 	}
 
 	{ /// Setup inputs
@@ -118,15 +115,65 @@ function create() {
 
 	{ /// Setup collision
 		// scene.physics.world.addOverlap(game.bulletGroup, game.enemyGroup, bulletVEnemy);
-		// scene.physics.world.addOverlap(game.enemyBulletsGroup, game.player, bulletVPlayer);
 		// scene.physics.world.addOverlap(game.enemyGroup, game.player, enemyVPlayer);
-		// scene.physics.world.addOverlap(game.enemyBulletsGroup, game.baseGroup, bulletVBase);
 		// scene.physics.world.addOverlap(game.player, game.baseGroup, playerVBase);
 		// scene.physics.world.addOverlap(game.player, game.enemyGroup, playerVEnemy);
 		// scene.physics.world.addOverlap(game.player, game.moneyGroup, playerVMoney);
 		// scene.physics.world.addCollider(game.enemyGroup, game.player, null, playerVEnemyProcess);
 		// scene.physics.world.addCollider(game.enemyGroup, game.enemyGroup);
 	}
+}
+
+function createEnemy(enemyType, xpos, ypos) {
+	var enemy;
+	var enemyData = {
+		type: null,
+		bulletDelayMax: 0,
+		bulletDelay: 0,
+	};
+
+	enemyData.type = enemyType;
+	if (enemyType == "stand") {
+		enemy = game.enemyGroup.create(0, 0, "sprites", "sprites/enemy");
+		enemy.x = xpos;
+		enemy.y = ypos;
+		enemyData.bulletDelayMax = 0.5;
+	} else {
+		log("unknown enemy type "+enemyType);
+		return null;
+	}
+
+	enemy.udata = enemyData;
+
+	return enemy;
+}
+
+function startLevel(num) {
+	if (num == 1) {
+		createEnemy("stand", 200, 200);
+	}
+}
+
+function shootBullet(bulletType, xpos, ypos, rad, friendly) {
+	let bullet;
+	let curGroup = friendly ? game.friendlyBulletGroup : game.enemyBulletGroup;
+
+	let bulletData = {
+		group: curGroup,
+	};
+
+	if (bulletType == "default") {
+		bullet = curGroup.create(0, 0, "sprites", "sprites/bullet");
+	} else {
+		log("Unknown bullet type "+bulletType);
+	}
+	bullet.x = xpos;
+	bullet.y = ypos;
+	bullet.setVelocity(Math.cos(rad) * 1000, Math.sin(rad) * 1000);
+
+	bullet.udata = bulletData;
+
+	return bullet;
 }
 
 function update(delta) {
@@ -161,6 +208,8 @@ function update(delta) {
 			game.mouseDown = false;
 			game.mouseJustUp = true;
 		}, this);
+
+		startLevel(1);
 	}
 
 	game.time = phaser.loop.time;
@@ -225,14 +274,13 @@ function update(delta) {
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0) {
 		game.bulletDelay = 0.25;
-		let bullet = game.bulletGroup.create(0, 0, "sprites", "sprites/bullet");
-		bullet.x = gun.x;
-		bullet.y = gun.y;
-		bullet.angle = gun.angle;
-		bullet.setVelocity(Math.cos(mouseRad) * 1000, Math.sin(mouseRad) * 1000);
+		shootBullet("default", gun.x, gun.y, mouseRad, true);
 	}
 
-	game.bulletGroup.getChildren().forEach(function(bullet) {
+	let allBullets = [];
+	allBullets.push(...game.enemyBulletGroup.getChildren());
+	allBullets.push(...game.friendlyBulletGroup.getChildren());
+	allBullets.forEach(function(bullet) {
 		if (
 			bullet.x < -100 ||
 			bullet.y < -100 ||
@@ -241,7 +289,18 @@ function update(delta) {
 		) {
 			bullet.destroy();
 		}
-		if (!bullet.active) game.bulletGroup.remove(bullet);
+
+		if (!bullet.active) bullet.udata.group.remove(bullet);
+	});
+
+	game.enemyGroup.getChildren().forEach(function(enemy) {
+		if (enemy.udata.type == "stand") {
+			enemy.udata.bulletDelay -= game.elapsed;
+			if (enemy.udata.bulletDelay <= 0) {
+				enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
+				// shootBullet(false,
+			}
+		}
 	});
 
 	{ /// Reset inputs
