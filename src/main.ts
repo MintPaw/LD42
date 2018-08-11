@@ -33,8 +33,7 @@ let game = {
 	lineGraphic: null,
 	hpBar: null,
 
-	friendlyBulletGroup: null,
-	enemyBulletGroup: null,
+	bullets: [],
 	enemyGroup: null,
 
 	map: null,
@@ -82,6 +81,12 @@ function preload() {
 	// scene.load.atlas("particles", "assets/particles.png", "assets/particles.json");
 	scene.load.image("tileset", "assets/tileset.png");
 	scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
+
+	scene.load.spritesheet("explosion1", "assets/explosion1.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("projectile1", "assets/projectile1.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("projectile2", "assets/projectile2.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("projectile3", "assets/projectile3.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("projectile4", "assets/projectile4.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
@@ -152,57 +157,68 @@ function startLevel(num) {
 	}
 }
 
-function shootBullet(bulletType, xpos, ypos, rad, friendly) {
+function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	let bullet;
-	let curGroup = friendly ? game.friendlyBulletGroup : game.enemyBulletGroup;
 
 	let bulletData = {
-		group: curGroup,
+		friendly: friendly,
+		rads: degToRad(deg),
 	};
 
 	if (bulletType == "default") {
-		bullet = curGroup.create(0, 0, "sprites", "sprites/bullet");
+		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else {
 		log("Unknown bullet type "+bulletType);
 	}
 	bullet.x = xpos;
 	bullet.y = ypos;
-	bullet.setVelocity(Math.cos(rad) * 1000, Math.sin(rad) * 1000);
+	bullet.angle = deg - 90;
 
 	bullet.udata = bulletData;
+	game.bullets.push(bullet);
 
 	return bullet;
 }
 
 function bulletVplayer(s1, s2) {
-	let bullet = game.enemyBulletGroup.contains(s1) ? s1 : s2;
-	let player = bullet == s1 ? s2 : s1;
+	// let bullet = game.enemyBulletGroup.contains(s1) ? s1 : s2;
+	// let player = bullet == s1 ? s2 : s1;
 
-	game.playerHp -= 1;
-	if (game.playerHp <= 0) player.destroy();
+	// game.playerHp -= 1;
+	// if (game.playerHp <= 0) player.destroy();
 
-	bullet.destroy();
+	// bullet.destroy();
 }
 
 function bulletVenemy(s1, s2) {
-	let bullet = game.friendlyBulletGroup.contains(s1) ? s1 : s2;
-	let enemy = bullet == s1 ? s2 : s1;
+	// let bullet = game.friendlyBulletGroup.contains(s1) ? s1 : s2;
+	// let enemy = bullet == s1 ? s2 : s1;
 
-	enemy.udata.hp -= 1;
-	if (enemy.udata.hp <= 0) enemy.destroy();
+	// enemy.udata.hp -= 1;
+	// if (enemy.udata.hp <= 0) enemy.destroy();
 
-	bullet.destroy();
+	// bullet.destroy();
 }
 
 function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		game.friendlyBulletGroup = scene.physics.add.group();
-		game.enemyBulletGroup = scene.physics.add.group();
-		game.enemyGroup = scene.physics.add.group();
+		scene.anims.create({
+			key: "explosion1",
+			frames: this.anims.generateFrameNumbers("explosion1", { start: 0, end: 3, first: 3 }),
+			frameRate: 20,
+			repeat: -1
+		});
 
-		scene.physics.world.addOverlap(game.friendlyBulletGroup, game.enemyGroup, bulletVenemy);
+		scene.anims.create({
+			key: "projectile1",
+			frames: this.anims.generateFrameNumbers("projectile1", { start: 0, end: 3, first: 3 }),
+			frameRate: 20,
+			repeat: -1
+		});
+
+		game.enemyGroup = scene.physics.add.group();
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -273,7 +289,6 @@ function update(delta) {
 		game.player = scene.physics.add.image(0, 0, "sprites", "sprites/player");
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
-		scene.physics.world.addOverlap(game.enemyBulletGroup, game.player, bulletVplayer);
 	}
 	let player = game.player;
 
@@ -304,7 +319,7 @@ function update(delta) {
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0) {
 		game.bulletDelay = 0.25;
-		shootBullet("default", gun.x, gun.y, mouseRad, true);
+		shootBullet("default", gun.x, gun.y, mouseDeg, true);
 	}
 
 	if (!game.hpBar) {
@@ -316,10 +331,9 @@ function update(delta) {
 	game.hpBar.y = game.height - game.hpBar.height - 10;
 
 	/// Update bullets
-	let allBullets = [];
-	allBullets.push(...game.enemyBulletGroup.getChildren());
-	allBullets.push(...game.friendlyBulletGroup.getChildren());
-	allBullets.forEach(function(bullet) {
+	game.bullets.forEach(function(bullet) {
+		bullet.x += Math.cos(bullet.udata.rads) * 10;
+		bullet.y += Math.sin(bullet.udata.rads) * 10;
 		if (
 			bullet.x < -100 ||
 			bullet.y < -100 ||
@@ -328,8 +342,6 @@ function update(delta) {
 		) {
 			bullet.destroy();
 		}
-
-		if (!bullet.active) bullet.udata.group.remove(bullet);
 	});
 
 	/// Update enemies
@@ -338,7 +350,7 @@ function update(delta) {
 			enemy.udata.bulletDelay -= game.elapsed;
 			if (enemy.udata.bulletDelay <= 0) {
 				enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
-				shootBullet("default", enemy.x, enemy.y, degToRad(getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y)), false);
+				shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
 			}
 		}
 

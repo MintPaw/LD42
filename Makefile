@@ -13,7 +13,7 @@ b:
 	-mkdir bin/assets/audio
 	cp sourceAssets/audio/* bin/assets/audio
 	cp -r sourceAssets/maps bin/assets
-	cp sourceAssets/tileset.png bin/assets
+	cp sourceAssets/*.png bin/assets
 	cp buildSystem/phaser.d.ts src
 	
 	tsc src/*.ts --outdir bin
