@@ -25,7 +25,6 @@ let config = {
 };
 
 let abs = Math.abs;
-let log = console.log;
 let phaser = new Phaser.Game(config);
 
 let game = {
@@ -232,6 +231,18 @@ function update(delta) {
 		bullet.angle = gun.angle;
 		bullet.setVelocity(Math.cos(mouseRad) * 1000, Math.sin(mouseRad) * 1000);
 	}
+
+	game.bulletGroup.getChildren().forEach(function(bullet) {
+		if (
+			bullet.x < -100 ||
+			bullet.y < -100 ||
+			bullet.x > game.width + 100 ||
+			bullet.y > game.width + 100
+		) {
+			bullet.destroy();
+		}
+		if (!bullet.active) game.bulletGroup.remove(bullet);
+	});
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;

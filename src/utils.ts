@@ -1,4 +1,5 @@
 let Vector2 = Phaser.Math.Vector2;
+let log = console.log;
 
 function scaleSpriteToSize(spr, newWidth, newHeight, keepRatio) {
 	if (keepRatio === undefined) keepRatio = true;
