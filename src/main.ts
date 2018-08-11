@@ -88,7 +88,9 @@ function preload() {
 	scene.load.spritesheet("projectile4", "assets/projectile4.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("playerIdle", "assets/playerIdle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 	scene.load.spritesheet("playerWalk", "assets/playerWalk.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 32, endFrame: 7 });
+	scene.load.spritesheet("enemy1Idle", "assets/enemy1Idle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("enemy1Attack", "assets/enemy1Attack.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
+	scene.load.spritesheet("enemy1Death", "assets/enemy1Death.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
 
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
@@ -134,6 +136,10 @@ function createHpBar(target) {
 	game.hpBars.push(hpBar);
 }
 
+function enemyAnimCallback(enemy, anim) {
+	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
+}
+
 function createEnemy(enemyType, xpos, ypos) {
 	let enemy;
 	let enemyData = {
@@ -152,21 +158,26 @@ function createEnemy(enemyType, xpos, ypos) {
 
 	enemyData.type = enemyType;
 	if (enemyType == "default") {
-		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.sprite(0, 0, "enemy1Idle")
 		enemyData.bulletDelayMax = 1;
 		enemyData.walkSpeed = 2;
 	} else if (enemyType == "rapid") {
-		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.sprite(0, 0, "enemy1Idle")
 		enemyData.bulletDelayMax = 0.25;
 		enemyData.walkSpeed = 3;
 	} else if (enemyType == "spread") {
-		enemy = scene.add.image(0, 0, "sprites", "sprites/enemy");
+		enemy = scene.add.sprite(0, 0, "enemy1Idle")
 		enemyData.bulletDelayMax = 3;
 		enemyData.walkSpeed = 1;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
 	}
+
+	enemy.anims.play("enemy1Idle", true);
+	enemy.on("animationcomplete", function(anim) {
+		enemyAnimCallback(enemy, anim);
+	});
 
 	enemy.x = xpos;
 	enemy.y = ypos;
@@ -225,12 +236,12 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		function createAnim(name, numFrames) {
+		function createAnim(name, numFrames, repeat=-1, frameRate=10) {
 			scene.anims.create({
 				key: name,
 				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
-				frameRate: 20,
-				repeat: -1
+				frameRate: frameRate,
+				repeat: repeat,
 			});
 		}
 
@@ -242,6 +253,9 @@ function update(delta) {
 		createAnim("playerIdle", 3);
 		createAnim("playerWalk", 3);
 		createAnim("playerDeath", 3);
+		createAnim("enemy1Idle", 3);
+		createAnim("enemy1Attack", 3, 0);
+		createAnim("enemy1Death", 3, 0);
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -356,7 +370,8 @@ function update(delta) {
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0) {
 		game.bulletDelay = 0.25;
-		shootBullet("default", gun.x, gun.y, mouseDeg, true);
+		let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
+		bullet.udata.speed = 20;
 	}
 
 	/// Update bullets
@@ -403,11 +418,13 @@ function update(delta) {
 			if (enemy.y < enemy.height/2) return; // continue
 			if (enemy.udata.type == "default") {
 				shootBullet("beam", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+				enemy.anims.play("enemy1Attack");
 			}
 
 			if (enemy.udata.type == "rapid") {
 				let bullet = shootBullet("dot", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-10, 10), false);
 				bullet.udata.speed = 10;
+				enemy.anims.play("enemy1Attack");
 			}
 
 			if (enemy.udata.type == "spread") {
@@ -420,6 +437,7 @@ function update(delta) {
 					let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
 					bullet.udata.speed = 2;
 				}
+				enemy.anims.play("enemy1Attack");
 			}
 		}
 
