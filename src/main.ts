@@ -147,6 +147,7 @@ function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Death") enemy.destroy();
 	if (anim.key == "enemy2Death") enemy.destroy();
 	if (anim.key == "fireEnemyDeath") enemy.destroy();
+	if (anim.key == "electricEnemyDeath") enemy.destroy();
 }
 
 function createEnemy(enemyType, xpos, ypos) {
@@ -192,6 +193,11 @@ function createEnemy(enemyType, xpos, ypos) {
 		enemy.anims.play("fireEnemyIdle", true);
 		enemyData.bulletDelayMax = 0.5;
 		enemyData.walkSpeed = 2;
+	} else if (enemyType == "electric") {
+		enemy = scene.add.sprite(0, 0, "electricEnemyIdle")
+		enemy.anims.play("electricEnemyIdle", true);
+		enemyData.bulletDelayMax = 5;
+		enemyData.walkSpeed = 2;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
@@ -218,8 +224,13 @@ function startLevel(num) {
 			en.udata.pattern = "randomWalk";
 		});
 
+		// addWaveTimer(1, function() {
+		// 	let en = createEnemy("rapid", game.width*0.3, -100);
+		// 	en.udata.pattern = "randomWalk";
+		// });
+
 		addWaveTimer(1, function() {
-			let en = createEnemy("rapid", game.width*0.3, -100);
+			let en = createEnemy("electric", game.width*0.3, -100);
 			en.udata.pattern = "randomWalk";
 		});
 
@@ -493,6 +504,27 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/fireEnemyDeath_1"},
 			{key: "sprites", frame: "sprites/fireEnemyDeath_2"},
 			{key: "sprites", frame: "sprites/fireEnemyDeath_3"}
+		], 0);
+
+		createAnimFromSheet("electricEnemyIdle", [
+			{key: "sprites", frame: "sprites/electricEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("electricEnemyAttack", [
+			{key: "sprites", frame: "sprites/electricEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("electricEnemyDeath", [
+			{key: "sprites", frame: "sprites/electricEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_3"}
 		], 0);
 
 		game.width = phaser.canvas.width;
@@ -791,6 +823,7 @@ function updateGame() {
 		if (enemy.udata.hp <= 0) {
 			if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
 			if (enemy.udata.type == "fire") enemy.anims.play("fireEnemyDeath", true);
+			if (enemy.udata.type == "electric") enemy.anims.play("electricEnemyDeath", true);
 			else enemy.anims.play("enemy1Death", true);
 			return;
 		}
@@ -833,6 +866,11 @@ function updateGame() {
 				let bullet = shootBullet("fire", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
 				bullet.udata.speed = 10;
 				enemy.anims.play("fireEnemyAttack");
+			}
+
+			if (enemy.udata.type == "electric") {
+				fireLightning(enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+				enemy.anims.play("electricEnemyAttack");
 			}
 		}
 
