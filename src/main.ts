@@ -41,7 +41,7 @@ let game = {
 	enemies: [],
 	hpBars: [],
 	money: 0,
-	ammo: [0, 20, 20, 20],
+	ammo: [0, 20, 20, 20, 20],
 	currentWeapon: 0,
 	timerCount: 0,
 	curLevel: 0,
@@ -80,6 +80,7 @@ let game = {
 	key2: null,
 	key3: null,
 	key4: null,
+	key5: null,
 
 	shopBg: null,
 	shopButtons: [],
@@ -304,6 +305,8 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		bullet = scene.add.sprite(0, 0, "fireParticle1").play("fireParticle1");
 	} else if (bulletType == "ice") {
 		bullet = scene.add.sprite(0, 0, "iceParticle").play("iceParticle");
+	} else if (bulletType == "split") {
+		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else if (bulletType == "lightning") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else {
@@ -329,7 +332,7 @@ function bulletHit(unit, bullet) {
 		unit.udata.iceTicks += 120;
 	}
 
-	if (bullet.udata.type == "lightning") {
+	if (bullet.udata.type == "split") {
 		let angles = [45, 90+45, 180+45, 270+45];
 		for (let i = 0; i < angles.length; i++) {
 			let bullet = shootBullet("default", unit.x, unit.y, angles[i], true);
@@ -487,6 +490,7 @@ function update(delta) {
 		game.key2 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
 		game.key3 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
 		game.key4 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
+		game.key5 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FIVE);
 
 		scene.input.on("pointermove", function (pointer) {
 			game.mouseX = pointer.x/game.scaleFactor;
@@ -615,6 +619,7 @@ function updateGame() {
 	if (game.key2.isDown) game.currentWeapon = 1;
 	if (game.key3.isDown) game.currentWeapon = 2;
 	if (game.key4.isDown) game.currentWeapon = 3;
+	if (game.key5.isDown) game.currentWeapon = 4;
 
 	if (space) {
 		game.enemies.forEach(function(enemy) {
@@ -696,24 +701,38 @@ function updateGame() {
 
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0 && gun.active) {
-		game.bulletDelay = 0.25;
 		if (game.currentWeapon != 0 && game.ammo[game.currentWeapon] <= 0) game.currentWeapon = 0;
 
 		if (game.currentWeapon == 0) {
+			game.bulletDelay = 0.25;
 			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 1) {
+			game.bulletDelay = 0.25;
 			let bullet = shootBullet("fire", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 20;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 2) {
+			game.bulletDelay = 0.25;
 			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 3) {
-			let bullet = shootBullet("lightning", gun.x, gun.y, mouseDeg, true);
+			game.bulletDelay = 0.25;
+			let bullet = shootBullet("split", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 5;
+			game.ammo[game.currentWeapon]--;
+		} else if (game.currentWeapon == 4) {
+			game.bulletDelay = 5;
+			for (let i = 0; i < 20; i++) {
+				let xpos = gun.x;
+				let ypos = gun.y;
+				scene.time.delayedCall(i * 1/60 * 1000, function() {
+					let bullet = shootBullet("lightning", xpos, ypos, mouseDeg, true);
+					bullet.udata.speed = 40;
+				});
+			}
 			game.ammo[game.currentWeapon]--;
 		}
 	}
@@ -856,6 +875,7 @@ function updateGame() {
 	if (game.currentWeapon == 0) currentWeaponStr = "Default";
 	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
-	if (game.currentWeapon == 3) currentWeaponStr = "Lightning";
-	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount);
+	if (game.currentWeapon == 3) currentWeaponStr = "Split";
+	if (game.currentWeapon == 4) currentWeaponStr = "Lightning";
+	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount);
 }
