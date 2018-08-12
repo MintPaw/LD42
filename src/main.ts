@@ -361,6 +361,28 @@ function showTooltip(text) {
 	game.tooltipShowing = true;
 }
 
+function fireLightning(xpos, ypos, deg, friendly) {
+	let endX = xpos + Math.cos(degToRad(deg)) * 500;
+	let endY = ypos + Math.sin(degToRad(deg)) * 500;
+
+	let line = scene.add.graphics({lineStyle: {width: 4, color: 0xFFFF00}});
+	line.strokeLineShape(new Phaser.Geom.Line(xpos, ypos, endX, endY));
+	line.alpha = 0;
+	scene.tweens.add({
+		targets: line,
+		alpha: { value: 1, duration: 1000, ease: "Power1" },
+		onComplete: function() {
+			line.destroy();
+			for (let i = 0; i < 20; i++) {
+				scene.time.delayedCall(i * 1/60 * 1000, function() {
+					let bullet = shootBullet("lightning", xpos, ypos, deg, friendly);
+					bullet.udata.speed = 40;
+				});
+			}
+		}
+	});
+}
+
 function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
@@ -725,14 +747,7 @@ function updateGame() {
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 4) {
 			game.bulletDelay = 5;
-			for (let i = 0; i < 20; i++) {
-				let xpos = gun.x;
-				let ypos = gun.y;
-				scene.time.delayedCall(i * 1/60 * 1000, function() {
-					let bullet = shootBullet("lightning", xpos, ypos, mouseDeg, true);
-					bullet.udata.speed = 40;
-				});
-			}
+			fireLightning(gun.x, gun.y, mouseDeg, true);
 			game.ammo[game.currentWeapon]--;
 		}
 	}
