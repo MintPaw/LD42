@@ -37,6 +37,7 @@ let game = {
 	bullets: [],
 	enemies: [],
 	hpBars: [],
+	ammo: [0, 20, 20, 20],
 	currentWeapon: 0,
 
 	map: null,
@@ -453,18 +454,24 @@ function update(delta) {
 	game.bulletDelay -= game.elapsed;
 	if (game.mouseDown && game.bulletDelay <= 0 && gun.active) {
 		game.bulletDelay = 0.25;
+		if (game.currentWeapon != 0 && game.ammo[game.currentWeapon] <= 0) game.currentWeapon = 0;
+
 		if (game.currentWeapon == 0) {
 			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
+			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 1) {
 			let bullet = shootBullet("fire", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 20;
+			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 2) {
 			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
+			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 3) {
 			let bullet = shootBullet("lightning", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 5;
+			game.ammo[game.currentWeapon]--;
 		}
 	}
 
@@ -572,7 +579,7 @@ function update(delta) {
 	game.hpBars.forEach(function(hpBar) {
 		let target = hpBar.udata.target;
 		hpBar.x = target.x;
-		hpBar.y = target.y - target.height/2 - 20;
+		hpBar.y = target.y - target.height/2 - hpBar.height/2 - 5;
 		hpBar.udata.bg.x = hpBar.x;
 		hpBar.udata.bg.y = hpBar.y;
 
@@ -592,7 +599,7 @@ function update(delta) {
 	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
 	if (game.currentWeapon == 3) currentWeaponStr = "Lightning";
-	game.debugText.setText("Weapon: "+currentWeaponStr);
+	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+"]");
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
