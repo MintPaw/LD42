@@ -40,6 +40,7 @@ let game = {
 	bullets: [],
 	enemies: [],
 	hpBars: [],
+	money: 0,
 	ammo: [0, 20, 20, 20],
 	currentWeapon: 0,
 	timerCount: 0,
