@@ -39,6 +39,7 @@ let game = {
 	hpBars: [],
 	ammo: [0, 20, 20, 20],
 	currentWeapon: 0,
+	timerCount: 0,
 
 	map: null,
 	mapLayers: [],
@@ -214,19 +215,34 @@ function createEnemy(enemyType, xpos, ypos) {
 
 function startLevel(num) {
 	if (num == 1) {
-		let en;
-		en = createEnemy("default", game.width*0.1, -100);
-		en.udata.pattern = "randomWalk";
+		addWaveTimer(1, function() {
+			let en = createEnemy("default", game.width*0.1, -100);
+			en.udata.pattern = "randomWalk";
+		});
 
-		en = createEnemy("rapid", game.width*0.3, -100);
-		en.udata.pattern = "randomWalk";
+		addWaveTimer(2, function() {
+			let en = createEnemy("rapid", game.width*0.3, -100);
+			en.udata.pattern = "randomWalk";
+		});
 
-		en = createEnemy("spread", game.width*0.5, -100);
-		en.udata.pattern = "randomWalk";
+		addWaveTimer(3, function() {
+			let en = createEnemy("spread", game.width*0.5, -100);
+			en.udata.pattern = "randomWalk";
+		});
 
-		en = createEnemy("ice", game.width*0.7, -100);
-		en.udata.pattern = "randomWalk";
+		addWaveTimer(4, function() {
+			let en = createEnemy("ice", game.width*0.7, -100);
+			en.udata.pattern = "randomWalk";
+		});
 	}
+}
+
+function addWaveTimer(time, fn) {
+	game.timerCount++;
+	scene.time.delayedCall(time * 1000, function() {
+		game.timerCount--;
+		fn();
+	});
 }
 
 function shootBullet(bulletType, xpos, ypos, deg, friendly) {
@@ -671,7 +687,7 @@ function update(delta) {
 	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
 	if (game.currentWeapon == 3) currentWeaponStr = "Lightning";
-	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+"]");
+	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount);
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
