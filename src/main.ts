@@ -151,13 +151,15 @@ function playerAnimCallback(anim) {
 
 function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
+	if (anim.key == "enemy2Attack") enemy.anims.play("enemy2Idle");
 	if (anim.key == "enemy1Death") enemy.destroy();
+	if (anim.key == "enemy2Death") enemy.destroy();
 }
 
 function createEnemy(enemyType, xpos, ypos) {
 	let enemy;
 	let enemyData = {
-		type: null,
+		type: enemyType,
 		hp: 10,
 		maxHp: 10,
 		bulletDelayMax: 0,
@@ -172,25 +174,31 @@ function createEnemy(enemyType, xpos, ypos) {
 		iceTicks: 0,
 	};
 
-	enemyData.type = enemyType;
 	if (enemyType == "default") {
 		enemy = scene.add.sprite(0, 0, "enemy1Idle")
+		enemy.anims.play("enemy1Idle", true);
 		enemyData.bulletDelayMax = 1;
 		enemyData.walkSpeed = 2;
 	} else if (enemyType == "rapid") {
 		enemy = scene.add.sprite(0, 0, "enemy1Idle")
+		enemy.anims.play("enemy1Idle", true);
 		enemyData.bulletDelayMax = 0.25;
 		enemyData.walkSpeed = 3;
 	} else if (enemyType == "spread") {
 		enemy = scene.add.sprite(0, 0, "enemy1Idle")
+		enemy.anims.play("enemy1Idle", true);
 		enemyData.bulletDelayMax = 3;
 		enemyData.walkSpeed = 1;
+	} else if (enemyType == "ice") {
+		enemy = scene.add.sprite(0, 0, "enemy2Idle")
+		enemy.anims.play("enemy2Idle", true);
+		enemyData.bulletDelayMax = 0.5;
+		enemyData.walkSpeed = 2;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
 	}
 
-	enemy.anims.play("enemy1Idle", true);
 	enemy.on("animationcomplete", function(anim) {
 		enemyAnimCallback(enemy, anim);
 	});
@@ -207,13 +215,16 @@ function createEnemy(enemyType, xpos, ypos) {
 function startLevel(num) {
 	if (num == 1) {
 		let en;
-		en = createEnemy("default", 100, -100);
+		en = createEnemy("default", game.width*0.1, -100);
 		en.udata.pattern = "randomWalk";
 
-		en = createEnemy("rapid", 300, -100);
+		en = createEnemy("rapid", game.width*0.3, -100);
 		en.udata.pattern = "randomWalk";
 
-		en = createEnemy("spread", 600, -100);
+		en = createEnemy("spread", game.width*0.5, -100);
+		en.udata.pattern = "randomWalk";
+
+		en = createEnemy("ice", game.width*0.7, -100);
 		en.udata.pattern = "randomWalk";
 	}
 }
@@ -240,7 +251,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	} else if (bulletType == "fire") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else if (bulletType == "ice") {
-		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+		bullet = scene.add.sprite(0, 0, "iceParticle").play("iceParticle");
 	} else if (bulletType == "lightning") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else {
@@ -292,6 +303,15 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
+		function createAnimFromSheet(name, frames, repeat=-1, frameRate=3) {
+			scene.anims.create({
+				key: name,
+				frames: frames,
+				frameRate: frameRate,
+				repeat: repeat,
+			});
+		}
+
 		function createAnim(name, numFrames, repeat=-1, frameRate=3) {
 			scene.anims.create({
 				key: name,
@@ -302,16 +322,53 @@ function update(delta) {
 		}
 
 		createAnim("explosion1", 3);
-		createAnim("projectile1", 3);
+
+		createAnimFromSheet("projectile1", [
+			{key: "sprites", frame: "sprites/projectile1_0"},
+			{key: "sprites", frame: "sprites/projectile1_1"},
+			{key: "sprites", frame: "sprites/projectile1_2"},
+			{key: "sprites", frame: "sprites/projectile1_3"}
+		]);
+
 		createAnim("projectile2", 3);
 		createAnim("projectile3", 3);
 		createAnim("projectile4", 3);
+
+		createAnimFromSheet("iceParticle", [
+			{key: "sprites", frame: "sprites/iceParticle_0"},
+			{key: "sprites", frame: "sprites/iceParticle_1"},
+			{key: "sprites", frame: "sprites/iceParticle_2"},
+			{key: "sprites", frame: "sprites/iceParticle_3"}
+		]);
+
 		createAnim("playerIdle", 3);
-		createAnim("playerWalk", 3);
+		createAnim("playerWalk", 3, -1, 8);
 		createAnim("playerDeath", 3, 0);
 		createAnim("enemy1Idle", 3);
 		createAnim("enemy1Attack", 3, 0, 20);
 		createAnim("enemy1Death", 3, 0);
+
+		createAnimFromSheet("enemy2Idle", [
+			{key: "sprites", frame: "sprites/enemy2Idle_0"},
+			{key: "sprites", frame: "sprites/enemy2Idle_1"},
+			{key: "sprites", frame: "sprites/enemy2Idle_2"},
+			{key: "sprites", frame: "sprites/enemy2Idle_3"}
+		]);
+
+		createAnimFromSheet("enemy2Attack", [
+			{key: "sprites", frame: "sprites/enemy2Attack_0"},
+			{key: "sprites", frame: "sprites/enemy2Attack_1"},
+			{key: "sprites", frame: "sprites/enemy2Attack_2"},
+			{key: "sprites", frame: "sprites/enemy2Attack_3"}
+		]);
+
+		createAnimFromSheet("enemy2Death", [
+			{key: "sprites", frame: "sprites/enemy2Death_0"},
+			{key: "sprites", frame: "sprites/enemy2Death_1"},
+			{key: "sprites", frame: "sprites/enemy2Death_2"},
+			{key: "sprites", frame: "sprites/enemy2Death_3"}
+		]);
+
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -414,7 +471,7 @@ function update(delta) {
 
 	let speed = 5;
 	speed /= game.scaleFactor;
-	if (player.udata.iceTicks) speed /= player.udata.iceTicks/60;
+	if (player.udata.iceTicks > 0) speed /= clampMap(player.udata.iceTicks, 0, 60*5, 1, 5);
 	if (up) player.y -= speed;
 	if (down) player.y += speed;
 	if (left) player.x -= speed;
@@ -495,7 +552,10 @@ function update(delta) {
 				if (bullet.udata.ignoreEnemy == enemy) return;
 				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
 					dealDamage(enemy, bullet);
-					if (enemy.udata.hp <= 0) enemy.anims.play("enemy1Death", true);
+					if (enemy.udata.hp <= 0) {
+						if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
+						else enemy.anims.play("enemy1Death", true);
+					}
 					bullet.destroy();
 				}
 			});
@@ -545,6 +605,12 @@ function update(delta) {
 				}
 				enemy.anims.play("enemy1Attack");
 			}
+
+			if (enemy.udata.type == "ice") {
+				let bullet = shootBullet("ice", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
+				bullet.udata.speed = 5;
+				enemy.anims.play("enemy2Attack");
+			}
 		}
 
 		if (enemy.udata.pattern == "randomWalk") {
@@ -560,7 +626,7 @@ function update(delta) {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				let speed = enemy.udata.walkSpeed;
 				speed /= game.scaleFactor;
-				if (enemy.udata.iceTicks) speed /= enemy.udata.iceTicks/60;
+				if (enemy.udata.iceTicks > 0) speed /= clampMap(enemy.udata.iceTicks, 0, 60*5, 1, 5);
 				enemy.x += Math.cos(rads) * speed;
 				enemy.y += Math.sin(rads) * speed;
 			}
