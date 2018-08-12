@@ -142,8 +142,10 @@ function playerAnimCallback(anim) {
 function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
 	if (anim.key == "enemy2Attack") enemy.anims.play("enemy2Idle");
+	if (anim.key == "fireEnemyAttack") enemy.anims.play("fireEnemyAttack");
 	if (anim.key == "enemy1Death") enemy.destroy();
 	if (anim.key == "enemy2Death") enemy.destroy();
+	if (anim.key == "fireEnemyDeath") enemy.destroy();
 }
 
 function createEnemy(enemyType, xpos, ypos) {
@@ -184,6 +186,11 @@ function createEnemy(enemyType, xpos, ypos) {
 		enemy.anims.play("enemy2Idle", true);
 		enemyData.bulletDelayMax = 0.5;
 		enemyData.walkSpeed = 2;
+	} else if (enemyType == "fire") {
+		enemy = scene.add.sprite(0, 0, "fireEnemyIdle")
+		enemy.anims.play("fireEnemyIdle", true);
+		enemyData.bulletDelayMax = 0.5;
+		enemyData.walkSpeed = 2;
 	} else {
 		log("unknown enemy type "+enemyType);
 		return null;
@@ -222,6 +229,11 @@ function startLevel(num) {
 
 		addWaveTimer(1, function() {
 			let en = createEnemy("ice", game.width*0.7, -100);
+			en.udata.pattern = "randomWalk";
+		});
+
+		addWaveTimer(1, function() {
+			let en = createEnemy("fire", game.width*0.9, -100);
 			en.udata.pattern = "randomWalk";
 		});
 	}
@@ -421,6 +433,27 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/enemy2Death_1"},
 			{key: "sprites", frame: "sprites/enemy2Death_2"},
 			{key: "sprites", frame: "sprites/enemy2Death_3"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyIdle", [
+			{key: "sprites", frame: "sprites/fireEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("fireEnemyAttack", [
+			{key: "sprites", frame: "sprites/fireEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyDeath", [
+			{key: "sprites", frame: "sprites/fireEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_3"}
 		], 0);
 
 		game.width = phaser.canvas.width;
@@ -709,6 +742,7 @@ function updateGame() {
 		tickEffects(enemy);
 		if (enemy.udata.hp <= 0) {
 			if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
+			if (enemy.udata.type == "fire") enemy.anims.play("fireEnemyDeath", true);
 			else enemy.anims.play("enemy1Death", true);
 			return;
 		}
@@ -745,6 +779,12 @@ function updateGame() {
 				let bullet = shootBullet("ice", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
 				bullet.udata.speed = 5;
 				enemy.anims.play("enemy2Attack");
+			}
+
+			if (enemy.udata.type == "fire") {
+				let bullet = shootBullet("fire", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
+				bullet.udata.speed = 10;
+				enemy.anims.play("fireEnemyAttack");
 			}
 		}
 
