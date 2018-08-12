@@ -40,6 +40,7 @@ let game = {
 	ammo: [0, 20, 20, 20],
 	currentWeapon: 0,
 	timerCount: 0,
+	inShop:<boolean> false,
 
 	map: null,
 	mapLayers: [],
@@ -74,6 +75,9 @@ let game = {
 	key2: null,
 	key3: null,
 	key4: null,
+
+	shopBg: null,
+	shopButtons: [],
 
 	// beepSound: null,
 }
@@ -111,27 +115,6 @@ function preload() {
 
 function create() {
 	// game.beepSound = scene.sound.add("beep", { loop: false });
-
-	{ /// Setup inputs
-		// scene.input.on("gameobjectdown", gameObjectDown, this);
-		// scene.input.on("gameobjectup", gameObjectUp, this);
-		// scene.input.on("gameobjectout", gameObjectOut, this);
-	}
-
-	{ /// Setup camera
-		// scene.cameras.main.startFollow(game.player);
-		// scene.cameras.main.roundPixels = true;
-	}
-
-	{ /// Setup collision
-		// scene.physics.world.addOverlap(game.bulletGroup, game.enemyGroup, bulletVEnemy);
-		// scene.physics.world.addOverlap(game.enemyGroup, game.player, enemyVPlayer);
-		// scene.physics.world.addOverlap(game.player, game.baseGroup, playerVBase);
-		// scene.physics.world.addOverlap(game.player, game.enemyGroup, playerVEnemy);
-		// scene.physics.world.addOverlap(game.player, game.moneyGroup, playerVMoney);
-		// scene.physics.world.addCollider(game.enemyGroup, game.player, null, playerVEnemyProcess);
-		// scene.physics.world.addCollider(game.enemyGroup, game.enemyGroup);
-	}
 }
 
 function createHpBar(target) {
@@ -367,7 +350,7 @@ function update(delta) {
 		]);
 
 		createAnim("playerIdle", 3);
-		createAnim("playerWalk", 3, -1);
+		createAnim("playerWalk", 3);
 		createAnim("playerDeath", 3, 0);
 		createAnim("enemy1Idle", 3);
 		createAnim("enemy1Attack", 3, 0, 20);
@@ -385,14 +368,14 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/enemy2Attack_1"},
 			{key: "sprites", frame: "sprites/enemy2Attack_2"},
 			{key: "sprites", frame: "sprites/enemy2Attack_3"}
-		]);
+		], 0);
 
 		createAnimFromSheet("enemy2Death", [
 			{key: "sprites", frame: "sprites/enemy2Death_0"},
 			{key: "sprites", frame: "sprites/enemy2Death_1"},
 			{key: "sprites", frame: "sprites/enemy2Death_2"},
 			{key: "sprites", frame: "sprites/enemy2Death_3"}
-		]);
+		], 0);
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -448,6 +431,43 @@ function update(delta) {
 	game.time = phaser.loop.time;
 	game.elapsed = phaser.loop.delta / 1000; // Probably should be hardcoded to 1/60
 
+	if (game.inShop) {
+		updateShop();
+	} else {
+		updateGame();
+	}
+
+	{ /// Reset inputs
+		game.mouseJustDown = false;
+		game.mouseJustUp = false;
+	}
+}
+
+function startShop() {
+	game.inShop = true;
+	game.shopBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
+
+	let buttonNames = ["Btn1", "Btn2", "Btn3", "Continue"];
+	let cols = 3;
+	let rows = 3;
+	let pad = 10;
+
+	for (let y = 0; y < rows; y++) {
+		for (let x = 0; x < cols; x++) {
+			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
+			let totalW = (btn.width + pad) * cols;
+			let totalH = (btn.height + pad) * rows;
+			btn.x = x * (btn.width + pad) + (game.width/2 - totalW/2) + btn.width/2;
+			btn.y = y * (btn.height + pad) + (game.height/2 - totalH/2) + btn.height/2;
+			game.shopButtons.push(btn);
+		}
+	}
+}
+
+function updateShop() {
+}
+
+function updateGame() {
 	let left = false;
 	let right = false;
 	let up = false;
@@ -478,6 +498,7 @@ function update(delta) {
 	game.lineGraphic.x = 0;
 	game.lineGraphic.y = game.linePosition;
 
+	/// Player
 	if (!game.player) {
 		game.player = scene.add.sprite(0, 0, "playerIdle").play("playerIdle");
 		game.player.x = game.width/2;
@@ -514,11 +535,17 @@ function update(delta) {
 		}
 	}
 
+	if (game.player.udata.hp <= 0) {
+		game.gun.destroy();
+		player.anims.play("playerDeath", true);
+	}
+
 	if (game.mouseX < player.x) player.scaleX = -1;
 	if (game.mouseX > player.x) player.scaleX = 1;
 
 	tickEffects(player);
 
+	/// Gun
 	let mouseDeg = Math.atan2(game.mouseX - player.x, -(game.mouseY - player.y))*(180/Math.PI) - 90;
 	let mouseRad = degToRad(mouseDeg);
 
@@ -576,19 +603,11 @@ function update(delta) {
 				if (bullet.udata.ignoreEnemy == enemy) return;
 				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
 					bulletHit(enemy, bullet);
-					if (enemy.udata.hp <= 0) {
-						if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
-						else enemy.anims.play("enemy1Death", true);
-					}
 				}
 			});
 		} else {
 			if (rectContainsPoint(player.x - player.width/2, player.y - player.height/2, player.width, player.height, bullet.x, bullet.y)) {
 				bulletHit(player, bullet);
-				if (game.player.udata.hp <= 0) {
-					gun.destroy();
-					player.anims.play("playerDeath", true);
-				}
 			}
 		}
 	});
@@ -600,6 +619,12 @@ function update(delta) {
 	/// Update enemies
 	game.enemies.forEach(function(enemy) {
 		tickEffects(enemy);
+		if (enemy.udata.hp <= 0) {
+			if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
+			else enemy.anims.play("enemy1Death", true);
+			return;
+		}
+
 		enemy.udata.bulletDelay -= game.elapsed;
 		if (enemy.udata.bulletDelay <= 0) {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
@@ -657,6 +682,7 @@ function update(delta) {
 		}	else {
 			log("Unknown pattern "+enemy.udata.pattern);
 		}
+
 	});
 
 	game.enemies = game.enemies.filter(function(enemy) {
@@ -682,15 +708,12 @@ function update(delta) {
 		return hpBar.active;
 	});
 
+	if (game.enemies.length == 0 && game.timerCount == 0) startShop();
+
 	let currentWeaponStr = "";
 	if (game.currentWeapon == 0) currentWeaponStr = "Default";
 	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
 	if (game.currentWeapon == 3) currentWeaponStr = "Lightning";
 	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount);
-
-	{ /// Reset inputs
-		game.mouseJustDown = false;
-		game.mouseJustUp = false;
-	}
 }
