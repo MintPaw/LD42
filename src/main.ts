@@ -321,7 +321,7 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		function createAnimFromSheet(name, frames, repeat=-1, frameRate=3) {
+		function createAnimFromSheet(name, frames, repeat=-1, frameRate=10) {
 			scene.anims.create({
 				key: name,
 				frames: frames,
@@ -367,7 +367,7 @@ function update(delta) {
 		]);
 
 		createAnim("playerIdle", 3);
-		createAnim("playerWalk", 3, -1, 8);
+		createAnim("playerWalk", 3, -1);
 		createAnim("playerDeath", 3, 0);
 		createAnim("enemy1Idle", 3);
 		createAnim("enemy1Attack", 3, 0, 20);
