@@ -101,18 +101,6 @@ function preload() {
 	scene.load.image("tileset", "assets/tileset.png");
 	scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
 
-	scene.load.spritesheet("explosion1", "assets/explosion1.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("projectile1", "assets/projectile1.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("projectile2", "assets/projectile2.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("projectile3", "assets/projectile3.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("projectile4", "assets/projectile4.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("playerIdle", "assets/playerIdle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("playerWalk", "assets/playerWalk.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("playerDeath", "assets/playerDeath.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("enemy1Idle", "assets/enemy1Idle.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("enemy1Attack", "assets/enemy1Attack.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-	scene.load.spritesheet("enemy1Death", "assets/enemy1Death.png", { frameWidth: 32, frameHeight: 32, endFrame: 3 });
-
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
 	}
@@ -416,7 +404,12 @@ function update(delta) {
 			});
 		}
 
-		createAnim("explosion1", 3);
+		createAnimFromSheet("explosion1", [
+			{key: "sprites", frame: "sprites/explosion1_0"},
+			{key: "sprites", frame: "sprites/explosion1_1"},
+			{key: "sprites", frame: "sprites/explosion1_2"},
+			{key: "sprites", frame: "sprites/explosion1_3"}
+		]);
 
 		createAnimFromSheet("projectile1", [
 			{key: "sprites", frame: "sprites/projectile1_0"},
@@ -425,9 +418,26 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/projectile1_3"}
 		]);
 
-		createAnim("projectile2", 3);
-		createAnim("projectile3", 3);
-		createAnim("projectile4", 3);
+		createAnimFromSheet("projectile2", [
+			{key: "sprites", frame: "sprites/projectile2_0"},
+			{key: "sprites", frame: "sprites/projectile2_1"},
+			{key: "sprites", frame: "sprites/projectile2_2"},
+			{key: "sprites", frame: "sprites/projectile2_3"}
+		]);
+
+		createAnimFromSheet("projectile3", [
+			{key: "sprites", frame: "sprites/projectile3_0"},
+			{key: "sprites", frame: "sprites/projectile3_1"},
+			{key: "sprites", frame: "sprites/projectile3_2"},
+			{key: "sprites", frame: "sprites/projectile3_3"}
+		]);
+
+		createAnimFromSheet("projectile4", [
+			{key: "sprites", frame: "sprites/projectile4_0"},
+			{key: "sprites", frame: "sprites/projectile4_1"},
+			{key: "sprites", frame: "sprites/projectile4_2"},
+			{key: "sprites", frame: "sprites/projectile4_3"}
+		]);
 
 		createAnimFromSheet("iceParticle", [
 			{key: "sprites", frame: "sprites/iceParticle_0"},
@@ -464,12 +474,40 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
 		]);
 
-		createAnim("playerIdle", 3);
-		createAnim("playerWalk", 3);
-		createAnim("playerDeath", 3, 0);
-		createAnim("enemy1Idle", 3);
-		createAnim("enemy1Attack", 3, 0, 20);
-		createAnim("enemy1Death", 3, 0);
+		createAnimFromSheet("playerIdle", [
+			{key: "sprites", frame: "sprites/playerIdle_0"},
+			{key: "sprites", frame: "sprites/playerIdle_1"},
+			{key: "sprites", frame: "sprites/playerIdle_2"},
+			{key: "sprites", frame: "sprites/playerIdle_3"}
+		]);
+
+		createAnimFromSheet("playerDeath", [
+			{key: "sprites", frame: "sprites/playerDeath_0"},
+			{key: "sprites", frame: "sprites/playerDeath_1"},
+			{key: "sprites", frame: "sprites/playerDeath_2"},
+			{key: "sprites", frame: "sprites/playerDeath_3"}
+		], 0);
+
+		createAnimFromSheet("enemy1Idle", [
+			{key: "sprites", frame: "sprites/enemy1Idle_0"},
+			{key: "sprites", frame: "sprites/enemy1Idle_1"},
+			{key: "sprites", frame: "sprites/enemy1Idle_2"},
+			{key: "sprites", frame: "sprites/enemy1Idle_3"}
+		]);
+
+		createAnimFromSheet("enemy1Attack", [
+			{key: "sprites", frame: "sprites/enemy1Attack_0"},
+			{key: "sprites", frame: "sprites/enemy1Attack_1"},
+			{key: "sprites", frame: "sprites/enemy1Attack_2"},
+			{key: "sprites", frame: "sprites/enemy1Attack_3"}
+		], 0, 20);
+
+		createAnimFromSheet("enemy1Death", [
+			{key: "sprites", frame: "sprites/enemy1Death_0"},
+			{key: "sprites", frame: "sprites/enemy1Death_1"},
+			{key: "sprites", frame: "sprites/enemy1Death_2"},
+			{key: "sprites", frame: "sprites/enemy1Death_3"}
+		], 0);
 
 		createAnimFromSheet("enemy2Idle", [
 			{key: "sprites", frame: "sprites/enemy2Idle_0"},
