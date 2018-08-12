@@ -319,7 +319,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	} else if (bulletType == "split") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
 	} else if (bulletType == "lightning") {
-		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+		bullet = scene.add.sprite(0, 0, "electricParticle").play("electricParticle");
 	} else {
 		log("Unknown bullet type "+bulletType);
 	}
@@ -407,7 +407,7 @@ function update(delta) {
 			});
 		}
 
-		function createAnim(name, numFrames, repeat=-1, frameRate=3) {
+		function createAnim(name, numFrames, repeat=-1, frameRate=10) {
 			scene.anims.create({
 				key: name,
 				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
@@ -449,6 +449,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/fireParticle2_2"},
 			{key: "sprites", frame: "sprites/fireParticle2_3"}
 		]);
+
+		createAnimFromSheet("electricParticle", [
+			{key: "sprites", frame: "sprites/electricParticle_0"},
+			{key: "sprites", frame: "sprites/electricParticle_1"},
+			{key: "sprites", frame: "sprites/electricParticle_2"},
+			{key: "sprites", frame: "sprites/electricParticle_3"}
+		], -1, 20);
 
 		createAnimFromSheet("iceParticleShatter", [
 			{key: "sprites", frame: "sprites/iceParticleShatter_0"},
