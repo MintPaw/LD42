@@ -301,7 +301,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	} else if (bulletType == "beam") {
 		bullet = scene.add.sprite(0, 0, "projectile4").play("projectile4");
 	} else if (bulletType == "fire") {
-		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+		bullet = scene.add.sprite(0, 0, "fireParticle1").play("fireParticle1");
 	} else if (bulletType == "ice") {
 		bullet = scene.add.sprite(0, 0, "iceParticle").play("iceParticle");
 	} else if (bulletType == "lightning") {
@@ -398,6 +398,20 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticle_1"},
 			{key: "sprites", frame: "sprites/iceParticle_2"},
 			{key: "sprites", frame: "sprites/iceParticle_3"}
+		]);
+
+		createAnimFromSheet("fireParticle1", [
+			{key: "sprites", frame: "sprites/fireParticle1_0"},
+			{key: "sprites", frame: "sprites/fireParticle1_1"},
+			{key: "sprites", frame: "sprites/fireParticle1_2"},
+			{key: "sprites", frame: "sprites/fireParticle1_3"}
+		]);
+
+		createAnimFromSheet("fireParticle2", [
+			{key: "sprites", frame: "sprites/fireParticle2_0"},
+			{key: "sprites", frame: "sprites/fireParticle2_1"},
+			{key: "sprites", frame: "sprites/fireParticle2_2"},
+			{key: "sprites", frame: "sprites/fireParticle2_3"}
 		]);
 
 		createAnimFromSheet("iceParticleShatter", [
