@@ -40,6 +40,7 @@ let game = {
 	ammo: [0, 20, 20, 20],
 	currentWeapon: 0,
 	timerCount: 0,
+	curLevel: 0,
 	inShop:<boolean> false,
 
 	map: null,
@@ -198,6 +199,7 @@ function createEnemy(enemyType, xpos, ypos) {
 }
 
 function startLevel(num) {
+	game.curLevel = num;
 	if (num == 1) {
 		addWaveTimer(1, function() {
 			let en = createEnemy("default", game.width*0.1, -100);
@@ -216,6 +218,40 @@ function startLevel(num) {
 
 		addWaveTimer(1, function() {
 			let en = createEnemy("ice", game.width*0.7, -100);
+			en.udata.pattern = "randomWalk";
+		});
+	}
+
+	if (num == 2) {
+		addWaveTimer(1, function() {
+			let en = createEnemy("default", game.width*0.1, -100);
+			en.udata.pattern = "randomWalk";
+		});
+
+		addWaveTimer(1, function() {
+			let en = createEnemy("default", game.width*0.3, -100);
+			en.udata.pattern = "randomWalk";
+		});
+
+		addWaveTimer(1, function() {
+			let en = createEnemy("default", game.width*0.5, -100);
+			en.udata.pattern = "randomWalk";
+		});
+	}
+
+	if (num == 3) {
+		addWaveTimer(1, function() {
+			let en = createEnemy("rapid", game.width*0.1, -100);
+			en.udata.pattern = "randomWalk";
+		});
+
+		addWaveTimer(1, function() {
+			let en = createEnemy("rapid", game.width*0.3, -100);
+			en.udata.pattern = "randomWalk";
+		});
+
+		addWaveTimer(1, function() {
+			let en = createEnemy("rapid", game.width*0.5, -100);
 			en.udata.pattern = "randomWalk";
 		});
 	}
@@ -472,6 +508,16 @@ function startShop() {
 }
 
 function updateShop() {
+	if (game.mouseDown && spriteContainsPoint(game.shopLeave, game.mouseX, game.mouseY)) {
+		game.shopButtons.forEach(function(btn) {
+			btn.destroy();
+		});
+		game.shopButtons = [];
+		game.shopBg.destroy();
+		game.shopLeave.destroy();
+		game.inShop = false;
+		startLevel(game.curLevel+1);
+	}
 }
 
 function updateGame() {

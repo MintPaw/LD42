@@ -78,3 +78,11 @@ function clampMap(value, sourceMin, sourceMax, destMin, destMax) {
 function rectContainsPoint(rx, ry, rw, rh, px, py) {
 	return px >= rx && px <= rx+(rw-1) && py >= ry && py <= ry+(rh-1);
 }
+
+function spriteContainsPoint(sprite, px, py) {
+	let rx = sprite.x - sprite.width/2;
+	let ry = sprite.y - sprite.height/2;
+	let rw = sprite.width;
+	let rh = sprite.height;
+	return rectContainsPoint(rx, ry, rw, rh, px, py);
+}
