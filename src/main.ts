@@ -78,6 +78,7 @@ let game = {
 
 	shopBg: null,
 	shopButtons: [],
+	shopLeave: null,
 
 	// beepSound: null,
 }
@@ -203,17 +204,17 @@ function startLevel(num) {
 			en.udata.pattern = "randomWalk";
 		});
 
-		addWaveTimer(2, function() {
+		addWaveTimer(1, function() {
 			let en = createEnemy("rapid", game.width*0.3, -100);
 			en.udata.pattern = "randomWalk";
 		});
 
-		addWaveTimer(3, function() {
+		addWaveTimer(1, function() {
 			let en = createEnemy("spread", game.width*0.5, -100);
 			en.udata.pattern = "randomWalk";
 		});
 
-		addWaveTimer(4, function() {
+		addWaveTimer(1, function() {
 			let en = createEnemy("ice", game.width*0.7, -100);
 			en.udata.pattern = "randomWalk";
 		});
@@ -446,6 +447,8 @@ function update(delta) {
 function startShop() {
 	game.inShop = true;
 	game.shopBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
+	game.shopBg.x = game.shopBg.width/2;
+	game.shopBg.y = game.shopBg.height/2;
 
 	let buttonNames = ["Btn1", "Btn2", "Btn3", "Continue"];
 	let cols = 3;
@@ -458,10 +461,14 @@ function startShop() {
 			let totalW = (btn.width + pad) * cols;
 			let totalH = (btn.height + pad) * rows;
 			btn.x = x * (btn.width + pad) + (game.width/2 - totalW/2) + btn.width/2;
-			btn.y = y * (btn.height + pad) + (game.height/2 - totalH/2) + btn.height/2;
+			btn.y = y * (btn.height + pad) + (game.height/2 - totalH/2) + btn.height/2 + 30;
 			game.shopButtons.push(btn);
 		}
 	}
+
+	game.shopLeave = scene.add.image(0, 0, "sprites", "sprites/shopButton");
+	game.shopLeave.x = game.width - game.shopLeave.width/2;
+	game.shopLeave.y = game.height - game.shopLeave.height/2;
 }
 
 function updateShop() {
@@ -485,6 +492,9 @@ function updateGame() {
 	if (game.key4.isDown) game.currentWeapon = 3;
 
 	if (space) {
+		game.enemies.forEach(function(enemy) {
+			enemy.udata.hp = 0;
+		});
 		// game.beepSound.play();
 	}
 
