@@ -31,6 +31,8 @@ let game = {
 	player: null,
 	gun: null,
 	lineGraphic: null,
+	debugText: null,
+	scaleFactor: 3,
 
 	bullets: [],
 	enemies: [],
@@ -281,7 +283,7 @@ function tickEffects(unit) {
 		unit.udata.iceTicks--;
 		unit.tint = 0x880000FF;
 	} else {
-		unit.tint = 0xFF000000;
+		unit.tint = 0xFFFFFFFF;
 	}
 }
 
@@ -329,8 +331,8 @@ function update(delta) {
 		game.key4 = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
 		scene.input.on("pointermove", function (pointer) {
-			game.mouseX = pointer.x;
-			game.mouseY = pointer.y;
+			game.mouseX = pointer.x/game.scaleFactor;
+			game.mouseY = pointer.y/game.scaleFactor;
 		}, this);
 
 		scene.input.on("pointerdown", function (e) {
@@ -347,8 +349,16 @@ function update(delta) {
 		let tiles = game.map.addTilesetImage("default", "tileset");
 
 		game.mapLayers[0] = game.map.createStaticLayer(0, tiles, 0, 0);
-		game.mapLayers[0].scaleX = 3;
-		game.mapLayers[0].scaleY = 3;
+
+		// game.mapLayers[0].scaleX = game.scaleFactor;
+		// game.mapLayers[0].scaleY = game.scaleFactor;
+		scene.cameras.main.zoom = game.scaleFactor;
+		game.width /= game.scaleFactor;
+		game.height /= game.scaleFactor;
+		scene.cameras.main.scrollX = -scene.cameras.main.width/game.scaleFactor;
+		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
+
+		game.debugText = scene.add.text(0, 0, "Debug text", {font: "9px Arial"});
 
 		startLevel(1);
 	}
@@ -402,6 +412,7 @@ function update(delta) {
 	let player = game.player;
 
 	let speed = 5;
+	speed /= game.scaleFactor;
 	if (player.udata.iceTicks) speed /= player.udata.iceTicks/60;
 	if (up) player.y -= speed;
 	if (down) player.y += speed;
@@ -459,8 +470,10 @@ function update(delta) {
 
 	/// Update bullets
 	game.bullets.forEach(function(bullet) {
-		bullet.x += Math.cos(bullet.udata.rads) * bullet.udata.speed;
-		bullet.y += Math.sin(bullet.udata.rads) * bullet.udata.speed;
+		var speed = bullet.udata.speed;
+		speed /= game.scaleFactor;
+		bullet.x += Math.cos(bullet.udata.rads) * speed;
+		bullet.y += Math.sin(bullet.udata.rads) * speed;
 		if (
 			bullet.x < -100 ||
 			bullet.y < -100 ||
@@ -539,6 +552,7 @@ function update(delta) {
 			} else {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				let speed = enemy.udata.walkSpeed;
+				speed /= game.scaleFactor;
 				if (enemy.udata.iceTicks) speed /= enemy.udata.iceTicks/60;
 				enemy.x += Math.cos(rads) * speed;
 				enemy.y += Math.sin(rads) * speed;
@@ -573,6 +587,12 @@ function update(delta) {
 		return hpBar.active;
 	});
 
+	let currentWeaponStr = "";
+	if (game.currentWeapon == 0) currentWeaponStr = "Default";
+	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
+	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
+	if (game.currentWeapon == 3) currentWeaponStr = "Lightning";
+	game.debugText.setText("Weapon: "+currentWeaponStr);
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
