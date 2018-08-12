@@ -34,6 +34,9 @@ let game = {
 	debugText: null,
 	scaleFactor: 3,
 
+	tooltipText: null,
+	tooltipShowing:<boolean> false,
+
 	bullets: [],
 	enemies: [],
 	hpBars: [],
@@ -337,6 +340,11 @@ function tickEffects(unit) {
 	}
 }
 
+function showTooltip(text) {
+	if (text != game.tooltipText.text) game.tooltipText.setText(text);
+	game.tooltipShowing = true;
+}
+
 function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
@@ -461,6 +469,8 @@ function update(delta) {
 		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
 
 		game.debugText = scene.add.text(0, 0, "Debug text", {font: "9px Arial"});
+		game.tooltipText = scene.add.text(0, 0, "Tooltip", {font: "18px Arial"});
+		game.tooltipText.depth = 1;
 
 		startLevel(1);
 	}
@@ -473,6 +483,18 @@ function update(delta) {
 	} else {
 		updateGame();
 	}
+
+	if (game.tooltipShowing) {
+		game.tooltipText.alpha += 0.05;
+	} else {
+		game.tooltipText.alpha -= 0.05;
+	}
+	game.tooltipShowing = false;
+	game.tooltipText.x = game.mouseX;
+	game.tooltipText.y = game.mouseY;
+	if (game.tooltipText.x + game.tooltipText.width > game.width) game.tooltipText.x -= game.tooltipText.width;
+	if (game.tooltipText.y + game.tooltipText.height > game.height) game.tooltipText.y -= game.tooltipText.height;
+	game.tooltipText.alpha = clamp(game.tooltipText.alpha, 0, 1);
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
@@ -508,15 +530,24 @@ function startShop() {
 }
 
 function updateShop() {
-	if (game.mouseDown && spriteContainsPoint(game.shopLeave, game.mouseX, game.mouseY)) {
-		game.shopButtons.forEach(function(btn) {
-			btn.destroy();
-		});
-		game.shopButtons = [];
-		game.shopBg.destroy();
-		game.shopLeave.destroy();
-		game.inShop = false;
-		startLevel(game.curLevel+1);
+	game.shopButtons.forEach(function(btn, i) {
+		if (spriteContainsPoint(btn, game.mouseX, game.mouseY)) {
+			showTooltip("Button "+i);
+		}
+	});
+
+	if (spriteContainsPoint(game.shopLeave, game.mouseX, game.mouseY)) {
+		showTooltip("Leave the shop");
+		if (game.mouseDown) {
+			game.shopButtons.forEach(function(btn) {
+				btn.destroy();
+			});
+			game.shopButtons = [];
+			game.shopBg.destroy();
+			game.shopLeave.destroy();
+			game.inShop = false;
+			startLevel(game.curLevel+1);
+		}
 	}
 }
 
