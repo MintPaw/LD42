@@ -132,10 +132,24 @@ function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
 	if (anim.key == "enemy2Attack") enemy.anims.play("enemy2Idle");
 	if (anim.key == "fireEnemyAttack") enemy.anims.play("fireEnemyAttack");
-	if (anim.key == "enemy1Death") enemy.destroy();
-	if (anim.key == "enemy2Death") enemy.destroy();
-	if (anim.key == "fireEnemyDeath") enemy.destroy();
-	if (anim.key == "electricEnemyDeath") enemy.destroy();
+
+	if (anim.key == "enemy1Death") {
+		enemy.destroy();
+		game.money += 10;
+	}
+	if (anim.key == "enemy2Death") {
+		enemy.destroy();
+		game.money += 10;
+	}
+	if (anim.key == "fireEnemyDeath") {
+		enemy.destroy();
+		game.money += 10;
+	}
+	if (anim.key == "electricEnemyDeath") {
+		enemy.destroy();
+		game.money += 10;
+	}
+
 }
 
 function createEnemy(enemyType, xpos, ypos) {
@@ -620,6 +634,8 @@ function update(delta) {
 		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
 
 		game.debugText = scene.add.text(0, 0, "Debug text", {font: "9px Arial"});
+		game.debugText.depth = 1;
+
 		game.tooltipText = scene.add.text(0, 0, "Tooltip", {font: "18px Arial"});
 		game.tooltipText.depth = 1;
 
@@ -647,6 +663,14 @@ function update(delta) {
 	if (game.tooltipText.y + game.tooltipText.height > game.height) game.tooltipText.y -= game.tooltipText.height;
 	game.tooltipText.alpha = clamp(game.tooltipText.alpha, 0, 1);
 
+	let currentWeaponStr = "";
+	if (game.currentWeapon == 0) currentWeaponStr = "Default";
+	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
+	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
+	if (game.currentWeapon == 3) currentWeaponStr = "Split";
+	if (game.currentWeapon == 4) currentWeaponStr = "Lightning";
+	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount+"\nMoney: "+game.money);
+
 	{ /// Reset inputs
 		game.mouseJustDown = false;
 		game.mouseJustUp = false;
@@ -659,7 +683,9 @@ function startShop() {
 	game.shopBg.x = game.shopBg.width/2;
 	game.shopBg.y = game.shopBg.height/2;
 
-	let buttonNames = ["Btn1", "Btn2", "Btn3", "Continue"];
+	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Split ammo + 20", "Lightning ammo + 20"];
+	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo"];
+	let prices = [10, 20, 30, 40];
 	let cols = 3;
 	let rows = 3;
 	let pad = 10;
@@ -667,6 +693,12 @@ function startShop() {
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
 			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
+			let index = (x % cols) + (y * cols);
+			btn.udata = {
+				item: buttonDesc[index],
+				name: buttonNames[index],
+				price: prices[index],
+			};
 			let totalW = (btn.width + pad) * cols;
 			let totalH = (btn.height + pad) * rows;
 			btn.x = x * (btn.width + pad) + (game.width/2 - totalW/2) + btn.width/2;
@@ -683,7 +715,17 @@ function startShop() {
 function updateShop() {
 	game.shopButtons.forEach(function(btn, i) {
 		if (spriteContainsPoint(btn, game.mouseX, game.mouseY)) {
-			showTooltip("Button "+i);
+			showTooltip("Buy "+btn.udata.item+"\n$"+btn.udata.price);
+
+			if (game.mouseJustDown) {
+				if (game.money >= btn.udata.price) {
+					game.money -= btn.udata.price;
+					if (btn.udata.name == "fireAmmo") game.ammo[1] += 20;
+					if (btn.udata.name == "iceAmmo") game.ammo[2] += 20;
+					if (btn.udata.name == "splitAmmo") game.ammo[3] += 20;
+					if (btn.udata.name == "lightningAmmo") game.ammo[4] += 20;
+				}
+			}
 		}
 	});
 
@@ -866,10 +908,15 @@ function updateGame() {
 	game.enemies.forEach(function(enemy) {
 		tickEffects(enemy);
 		if (enemy.udata.hp <= 0) {
-			if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
-			if (enemy.udata.type == "fire") enemy.anims.play("fireEnemyDeath", true);
-			if (enemy.udata.type == "electric") enemy.anims.play("electricEnemyDeath", true);
-			else enemy.anims.play("enemy1Death", true);
+			if (enemy.udata.type == "ice") {
+				enemy.anims.play("enemy2Death", true);
+			} else if (enemy.udata.type == "fire") {
+				enemy.anims.play("fireEnemyDeath", true);
+			} else if (enemy.udata.type == "electric") {
+				enemy.anims.play("electricEnemyDeath", true);
+			} else {
+				enemy.anims.play("enemy1Death", true);
+			}
 			return;
 		}
 
@@ -968,12 +1015,4 @@ function updateGame() {
 	});
 
 	if (game.enemies.length == 0 && game.timerCount == 0) startShop();
-
-	let currentWeaponStr = "";
-	if (game.currentWeapon == 0) currentWeaponStr = "Default";
-	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
-	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
-	if (game.currentWeapon == 3) currentWeaponStr = "Split";
-	if (game.currentWeapon == 4) currentWeaponStr = "Lightning";
-	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount);
 }
