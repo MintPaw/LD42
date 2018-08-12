@@ -86,7 +86,7 @@ let game = {
 	shopButtons: [],
 	shopLeave: null,
 
-	// beepSound: null,
+	mainMusic: null,
 }
 
 let scene = null;
@@ -105,11 +105,26 @@ function preload() {
 		scene.load.audio(name, [path], {instances: instances});
 	}
 
-	addAudio("beep", "assets/audio/beep.mp3");
+	addAudio("mainMusic", "assets/audio/mainMusic.ogg", 1);
+	addAudio("menuMusic", "assets/audio/menuMusic.ogg", 1);
+	addAudio("shopMusic", "assets/audio/shopMusic.ogg", 1);
+	addAudio("soundHurt1", "assets/audio/player_hurt_1.ogg", 3);
+	addAudio("soundHurt2", "assets/audio/player_hurt_2.ogg", 3);
+	addAudio("soundHurt3", "assets/audio/player_hurt_3.ogg", 3);
+	addAudio("soundHurt4", "assets/audio/player_hurt_4.ogg", 3);
+	addAudio("soundHurt5", "assets/audio/player_hurt_5.ogg", 3);
+	addAudio("soundElectricFire", "assets/audio/electric_fire.ogg", 5);
+	addAudio("soundFireFire", "assets/audio/fire_fire.ogg", 5);
+	addAudio("soundIceFire", "assets/audio/ice_fire.ogg", 5);
+	addAudio("enemyHitFire", "assets/audio/enemy_hit_fire.ogg", 5);
+	addAudio("enemyHitElectric", "assets/audio/enemy_hit_electric.ogg", 5);
+	addAudio("enemyHitIce", "assets/audio/enemy_hit_ice.ogg", 5);
+	addAudio("weaponSwitch", "assets/audio/weapon_switch.ogg", 5);
 }
 
 function create() {
-	// game.beepSound = scene.sound.add("beep", { loop: false });
+	game.mainMusic = scene.sound.add("mainMusic", { loop: true });
+	game.mainMusic.play();
 }
 
 function createHpBar(target) {
@@ -336,6 +351,26 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 }
 
 function bulletHit(unit, bullet) {
+	if (unit == game.player) {
+		if (unit.udata.hp > 0) {
+			let sound = scene.sound.add("soundHurt"+Math.round(rnd(1, 5)), { loop: false });
+			sound.play();
+		}
+	} else {
+		if (bullet.udata.type == "fire") {
+			let sound = scene.sound.add("enemyHitFire", { loop: false });
+			sound.play();
+		}
+		if (bullet.udata.type == "ice") {
+			let sound = scene.sound.add("enemyHitIce", { loop: false });
+			sound.play();
+		}
+		if (bullet.udata.type == "lightning") {
+			let sound = scene.sound.add("enemyHitElectric", { loop: false });
+			sound.play();
+		}
+	}
+
 	unit.udata.hp -= 1;
 	if (bullet.udata.type == "fire") {
 		unit.udata.fireTicks += 60;
@@ -756,17 +791,36 @@ function updateGame() {
 	if (game.keyD.isDown || game.keyRight.isDown) right = true;
 	if (game.keySpace.isDown) space = true;
 
-	if (game.key1.isDown) game.currentWeapon = 0;
-	if (game.key2.isDown) game.currentWeapon = 1;
-	if (game.key3.isDown) game.currentWeapon = 2;
-	if (game.key4.isDown) game.currentWeapon = 3;
-	if (game.key5.isDown) game.currentWeapon = 4;
+	if (game.key1.isDown && game.currentWeapon != 0) {
+		let sound = scene.sound.add("weaponSwitch", { loop: false });
+		sound.play();
+		game.currentWeapon = 0;
+	}
+	if (game.key2.isDown && game.currentWeapon != 1) {
+		let sound = scene.sound.add("weaponSwitch", { loop: false });
+		sound.play();
+		game.currentWeapon = 1;
+	}
+	if (game.key3.isDown && game.currentWeapon != 2) {
+		let sound = scene.sound.add("weaponSwitch", { loop: false });
+		sound.play();
+		game.currentWeapon = 2;
+	}
+	if (game.key4.isDown && game.currentWeapon != 3) {
+		let sound = scene.sound.add("weaponSwitch", { loop: false });
+		sound.play();
+		game.currentWeapon = 3;
+	}
+	if (game.key5.isDown && game.currentWeapon != 4) {
+		let sound = scene.sound.add("weaponSwitch", { loop: false });
+		sound.play();
+		game.currentWeapon = 4;
+	}
 
 	if (space) {
 		game.enemies.forEach(function(enemy) {
 			enemy.udata.hp = 0;
 		});
-		// game.beepSound.play();
 	}
 
 	game.lineProgress += 0.0001;
@@ -849,12 +903,19 @@ function updateGame() {
 			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
 			game.ammo[game.currentWeapon]--;
+
 		} else if (game.currentWeapon == 1) {
+			let sound = scene.sound.add("soundFireFire", { loop: false });
+			sound.play();
+
 			game.bulletDelay = 0.25;
 			let bullet = shootBullet("fire", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 20;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 2) {
+			let sound = scene.sound.add("soundIceFire", { loop: false });
+			sound.play();
+
 			game.bulletDelay = 0.25;
 			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 10;
@@ -865,6 +926,9 @@ function updateGame() {
 			bullet.udata.speed = 5;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 4) {
+			let sound = scene.sound.add("soundElectricFire", { loop: false });
+			sound.play();
+
 			game.bulletDelay = 5;
 			fireLightning(gun.x, gun.y, mouseDeg, true);
 			game.ammo[game.currentWeapon]--;

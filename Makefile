@@ -4,6 +4,13 @@ all:
 	$(MAKE) b
 	$(MAKE) r
 
+processAudio:
+	for file in sourceAssets/audio/*.wav; do \
+		ffmpeg -i $$file -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y & \
+	done; \
+	wait;
+
+
 b:
 	-mkdir bin
 	rm -rf bin/assets
@@ -11,7 +18,7 @@ b:
 	-cd sourceAssets; \
 		$(PACKER) --powerOf2 --format pixijs sprites ../bin/assets
 	-mkdir bin/assets/audio
-	cp sourceAssets/audio/* bin/assets/audio
+	cp sourceAssets/audio/*.ogg bin/assets/audio
 	cp -r sourceAssets/maps bin/assets
 	cp sourceAssets/*.png bin/assets
 	cp buildSystem/phaser.d.ts src
