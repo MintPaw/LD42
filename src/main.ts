@@ -267,7 +267,7 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 	return bullet;
 }
 
-function dealDamage(unit, bullet) {
+function bulletHit(unit, bullet) {
 	unit.udata.hp -= 1;
 	if (bullet.udata.type == "fire") {
 		unit.udata.fireTicks += 60;
@@ -284,6 +284,8 @@ function dealDamage(unit, bullet) {
 			bullet.udata.ignoreEnemy = unit;
 		}
 	}
+
+	bullet.destroy();
 }
 
 function tickEffects(unit) {
@@ -341,6 +343,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticle_3"}
 		]);
 
+		createAnimFromSheet("iceParticleShatter", [
+			{key: "sprites", frame: "sprites/iceParticleShatter_0"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_1"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_2"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
+		]);
+
 		createAnim("playerIdle", 3);
 		createAnim("playerWalk", 3, -1, 8);
 		createAnim("playerDeath", 3, 0);
@@ -368,7 +377,6 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/enemy2Death_2"},
 			{key: "sprites", frame: "sprites/enemy2Death_3"}
 		]);
-
 
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
@@ -551,22 +559,20 @@ function update(delta) {
 			game.enemies.forEach(function(enemy) {
 				if (bullet.udata.ignoreEnemy == enemy) return;
 				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
-					dealDamage(enemy, bullet);
+					bulletHit(enemy, bullet);
 					if (enemy.udata.hp <= 0) {
 						if (enemy.udata.type == "ice") enemy.anims.play("enemy2Death", true);
 						else enemy.anims.play("enemy1Death", true);
 					}
-					bullet.destroy();
 				}
 			});
 		} else {
 			if (rectContainsPoint(player.x - player.width/2, player.y - player.height/2, player.width, player.height, bullet.x, bullet.y)) {
-				dealDamage(player, bullet);
+				bulletHit(player, bullet);
 				if (game.player.udata.hp <= 0) {
 					gun.destroy();
 					player.anims.play("playerDeath", true);
 				}
-				bullet.destroy();
 			}
 		}
 	});
