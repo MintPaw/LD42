@@ -1107,7 +1107,7 @@ function updateGame() {
 			playSound("soundBasicFire");
 
 			game.bulletDelay = SPREAD_SHOT_PLAYER_DELAY;
-			let bullet = shootBullet("spread", gun.x, gun.y, mouseDeg, true);
+			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = SPREAD_SHOT_PLAYER_SPEED;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 4) {
