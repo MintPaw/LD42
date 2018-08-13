@@ -1007,6 +1007,7 @@ function updateMenu() {
 	startButton.depth = 2;
 
 	if (game.mouseJustDown && spriteContainsPoint(startButton, game.mouseX, game.mouseY)) {
+		playSound("mouseSelect");
 		scene.cameras.main.fade(1000, 0, 0, 0, false);
 
 		scene.tweens.add({
@@ -1022,7 +1023,6 @@ function updateMenu() {
 					volume: { value: SOUND_MAIN_MUSIC_VOLUME, duration: 1000, ease: "Power1" },
 					onComplete: function() {
 						scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
-						playSound("mouseSelect");
 						game.inMenu = false;
 						startLevel(1);
 						menuBg.destroy();
@@ -1125,11 +1125,11 @@ function updateGame() {
 		game.currentWeapon = 4;
 	}
 
-	if (space) {
-		game.enemies.forEach(function(enemy) {
-			enemy.udata.hp = 0;
-		});
-	}
+	// if (space) {
+	// 	game.enemies.forEach(function(enemy) {
+	// 		enemy.udata.hp = 0;
+	// 	});
+	// }
 
 	game.lineProgress += 0.0001;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
