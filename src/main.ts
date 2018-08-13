@@ -862,6 +862,7 @@ function update(delta) {
 
 		game.tooltipText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
 		game.tooltipText.depth = 1;
+		game.tooltipText.scaleX = game.tooltipText.scaleY = 1/3;
 
 		game.weaponText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
 		game.weaponText.depth = 1;
@@ -953,18 +954,19 @@ function startShop() {
 	game.shopBg.x = game.shopBg.width/2;
 	game.shopBg.y = game.shopBg.height/2;
 
-	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Spread ammo + 20", "Lightning ammo + 20"];
-	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo"];
-	let iconPaths = ["sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton"];
-	let prices = [10, 20, 30, 40];
+	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Spread ammo + 20", "Lightning ammo + 20", "Recover health"];
+	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo", "health"];
+	let iconPaths = ["sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton"];
+	let prices = [FIRE_PRICE, ICE_PRICE, SPREAD_PRICE, ELECTRIC_PRICE, HP_PRICE];
 	let cols = 3;
 	let rows = 3;
 	let pad = 10;
 
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
-			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
 			let index = (x % cols) + (y * cols);
+			if (buttonDesc[index] === undefined) continue;
+			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
 			btn.udata = {
 				item: buttonDesc[index],
 				name: buttonNames[index],
@@ -1058,6 +1060,7 @@ function updateShop() {
 					if (btn.udata.name == "iceAmmo") game.ammo[2] += 20;
 					if (btn.udata.name == "splitAmmo") game.ammo[3] += 20;
 					if (btn.udata.name == "lightningAmmo") game.ammo[4] += 20;
+					if (btn.udata.name == "health") game.player.udata.hp = game.player.udata.maxHp;
 				}
 			}
 		}
@@ -1136,11 +1139,11 @@ function updateGame() {
 		game.currentWeapon = 4;
 	}
 
-	// if (space) {
-	// 	game.enemies.forEach(function(enemy) {
-	// 		enemy.udata.hp = 0;
-	// 	});
-	// }
+	if (space) {
+		game.enemies.forEach(function(enemy) {
+			enemy.udata.hp = 0;
+		});
+	}
 
 	game.lineProgress += 0.0001 * SHIELD_SPEED_MULTIPLIER;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
