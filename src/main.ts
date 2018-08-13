@@ -459,13 +459,13 @@ function fireLightning(xpos, ypos, deg, friendly) {
 	line.alpha = 0;
 	scene.tweens.add({
 		targets: line,
-		alpha: { value: 1, duration: 1000, ease: "Power1" },
+		alpha: { value: 1, duration: ELECTRIC_SHOT_START_DELAY * 1000, ease: "Power1" },
 		onComplete: function() {
 			line.destroy();
-			for (let i = 0; i < 20; i++) {
+			for (let i = 0; i < ELECTRIC_SHOT_AMOUNT; i++) {
 				scene.time.delayedCall(i * 1/60 * 1000, function() {
 					let bullet = shootBullet("lightning", xpos, ypos, deg, friendly);
-					bullet.udata.speed = 40;
+					bullet.udata.speed = ELECTRIC_SHOT_SPEED;
 				});
 			}
 		}
@@ -1015,7 +1015,7 @@ function updateGame() {
 
 	let speed = 5;
 	speed /= game.scaleFactor;
-	if (player.udata.iceTicks > 0) speed /= clampMap(player.udata.iceTicks, 0, 60*5, 1, 5);
+	if (player.udata.iceTicks > 0) speed /= clampMap(player.udata.iceTicks, 0, 60*5, 1, 5) * ICE_SLOW_MULTIPLIER;
 	if (up) player.y -= speed;
 	if (down) player.y += speed;
 	if (left) player.x -= speed;
@@ -1074,40 +1074,40 @@ function updateGame() {
 			let sound = scene.sound.add("soundBasicFire", { loop: false });
 			sound.play();
 
-			game.bulletDelay = 0.25;
+			game.bulletDelay = DEFAULT_SHOT_PLAYER_DELAY;
 			let bullet = shootBullet("default", gun.x, gun.y, mouseDeg, true);
-			bullet.udata.speed = 10;
+			bullet.udata.speed = DEFAULT_SHOT_PLAYER_SPEED;
 			game.ammo[game.currentWeapon]--;
 
 		} else if (game.currentWeapon == 1) {
 			let sound = scene.sound.add("soundFireFire", { loop: false });
 			sound.play();
 
-			game.bulletDelay = 0.25;
+			game.bulletDelay = FIRE_SHOT_PLAYER_DELAY;
 			let bullet = shootBullet("fire", gun.x, gun.y, mouseDeg, true);
-			bullet.udata.speed = 20;
+			bullet.udata.speed = FIRE_SHOT_PLAYER_SPEED;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 2) {
 			let sound = scene.sound.add("soundIceFire", { loop: false });
 			sound.play();
 
-			game.bulletDelay = 0.25;
+			game.bulletDelay = ICE_SHOT_PLAYER_DELAY;
 			let bullet = shootBullet("ice", gun.x, gun.y, mouseDeg, true);
-			bullet.udata.speed = 10;
+			bullet.udata.speed = ICE_SHOT_PLAYER_SPEED;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 3) {
 			let sound = scene.sound.add("soundBasicFire", { loop: false });
 			sound.play();
 
-			game.bulletDelay = 0.25;
+			game.bulletDelay = SPREAD_SHOT_PLAYER_DELAY;
 			let bullet = shootBullet("spread", gun.x, gun.y, mouseDeg, true);
-			bullet.udata.speed = 5;
+			bullet.udata.speed = SPREAD_SHOT_PLAYER_SPEED;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 4) {
 			let sound = scene.sound.add("soundElectricFire", { loop: false });
 			sound.play();
 
-			game.bulletDelay = 5;
+			game.bulletDelay = ELECTRIC_SHOT_PLAYER_DELAY;
 			fireLightning(gun.x, gun.y, mouseDeg, true);
 			game.ammo[game.currentWeapon]--;
 		}
@@ -1166,7 +1166,8 @@ function updateGame() {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
 			if (enemy.y < 0) return; // continue
 			if (enemy.udata.type == "default") {
-				shootBullet("beam", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+				let bullet = shootBullet("beam", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
+				bullet.udata.speed = DEFAULT_SHOT_ENEMY_SPEED;
 				enemy.anims.play("enemy1Attack");
 			}
 
@@ -1177,27 +1178,27 @@ function updateGame() {
 			}
 
 			if (enemy.udata.type == "spread") {
-				let shots = 5;
+				let shots = ENEMY_SPREAD_SHOTS_AMOUNT;
 				for (let i = 0; i < shots; i++) {
-					let startOff = -30;
-					let endOff = 30;
+					let startOff = -ENEMY_SPREAD_DEGREE_RANGE
+					let endOff = ENEMY_SPREAD_DEGREE_RANGE;
 					let angleOff = map(i, 0, shots, startOff, endOff);
 
 					let bullet = shootBullet("spread", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
-					bullet.udata.speed = 2;
+					bullet.udata.speed = SPREAD_SHOT_ENEMY_SPEED;
 				}
 				enemy.anims.play("spreadEnemyAttack");
 			}
 
 			if (enemy.udata.type == "ice") {
 				let bullet = shootBullet("ice", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
-				bullet.udata.speed = 5;
+				bullet.udata.speed = ICE_SHOT_ENEMY_SPEED;
 				enemy.anims.play("enemy2Attack");
 			}
 
 			if (enemy.udata.type == "fire") {
 				let bullet = shootBullet("fire", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + rnd(-3, 3), false);
-				bullet.udata.speed = 10;
+				bullet.udata.speed = FIRE_SHOT_ENEMY_SPEED;
 				enemy.anims.play("fireEnemyAttack");
 			}
 
