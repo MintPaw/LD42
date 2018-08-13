@@ -473,6 +473,8 @@ function createHpBar(target) {
 	let hpBarBg = scene.add.image(0, 0, "sprites", "sprites/hpBarBg");
 	let hpBar = scene.add.image(0, 0, "sprites", "sprites/hpBar");
 
+	hpBar.scaleX = hpBar.scaleY = hpBarBg.scaleX = hpBarBg.scaleY = 1/3;
+
 	hpBar.udata = {
 		target: target,
 		bg: hpBarBg,
@@ -1395,11 +1397,11 @@ function updateGame() {
 	game.hpBars.forEach(function(hpBar) {
 		let target = hpBar.udata.target;
 		hpBar.x = target.x;
-		hpBar.y = target.y - target.height/2 - hpBar.height/2 - 5;
+		hpBar.y = target.y + target.height/2 + 4;
 		hpBar.udata.bg.x = hpBar.x;
 		hpBar.udata.bg.y = hpBar.y;
 
-		hpBar.scaleX = target.udata.hp/target.udata.maxHp;
+		hpBar.scaleX = target.udata.hp/target.udata.maxHp * 1/3;
 		if (target.udata.hp <= 0) {
 			hpBar.udata.bg.destroy();
 			hpBar.destroy();
