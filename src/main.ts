@@ -24,71 +24,356 @@ let config = {
 let abs = Math.abs;
 let phaser = new Phaser.Game(config);
 
-let game = {
-	frameCount: 0,
-	player: null,
-	gun: null,
-	lineGraphic: null,
-	debugText: null,
-	scaleFactor: 3,
+let game;
+let didAnims = false;
+function resetGame() {
+	game = {
+		frameCount: 0,
+		player: null,
+		gun: null,
+		lineGraphic: null,
+		debugText: null,
+		scaleFactor: 3,
 
-	tooltipText: null,
-	tooltipShowing:<boolean> false,
+		tooltipText: null,
+		tooltipShowing:<boolean> false,
 
-	bullets: [],
-	enemies: [],
-	hpBars: [],
-	money: 0,
-	ammo: [0, 20, 20, 20, 20],
-	currentWeapon: 0,
-	timerCount: 0,
-	curLevel: 0,
-	inMenu:<boolean> true,
-	inShop:<boolean> false,
+		bullets: [],
+		enemies: [],
+		hpBars: [],
+		money: 0,
+		ammo: [0, 20, 20, 20, 20],
+		currentWeapon: 0,
+		timerCount: 0,
+		curLevel: 0,
+		inMenu:<boolean> true,
+		inShop:<boolean> false,
 
-	map: null,
-	mapLayers: [],
+		map: null,
+		mapLayers: [],
 
-	bulletDelay: 0,
+		bulletDelay: 0,
 
-	shieldEnemy: null,
-	lineProgress:<number> 0.1,
-	linePosition:<number> 0,
+		shieldEnemy: null,
+		lineProgress:<number> 0.1,
+		linePosition:<number> 0,
 
-	firstFrame:<boolean> true,
-	width:<number> 0,
-	height:<number> 0,
-	time:<number> 0,
-	elapsed:<number> 0,
+		firstFrame:<boolean> true,
+		width:<number> 0,
+		height:<number> 0,
+		time:<number> 0,
+		elapsed:<number> 0,
 
-	mouseX:<number> 0,
-	mouseY:<number> 0,
-	mouseDown:<boolean> false,
-	mouseJustDown:<boolean> false,
-	mouseJustUp:<boolean> false,
+		mouseX:<number> 0,
+		mouseY:<number> 0,
+		mouseDown:<boolean> false,
+		mouseJustDown:<boolean> false,
+		mouseJustUp:<boolean> false,
 
-	keyW: null,
-	keyS: null,
-	keyA: null,
-	keyD: null,
-	keyUp: null,
-	keyDown: null,
-	keyLeft: null,
-	keyRight: null,
-	keySpace: null,
-	key1: null,
-	key2: null,
-	key3: null,
-	key4: null,
-	key5: null,
+		keyW: null,
+		keyS: null,
+		keyA: null,
+		keyD: null,
+		keyUp: null,
+		keyDown: null,
+		keyLeft: null,
+		keyRight: null,
+		keySpace: null,
+		key1: null,
+		key2: null,
+		key3: null,
+		key4: null,
+		key5: null,
 
-	shopBg: null,
-	shopButtons: [],
-	shopTexts: [],
-	shopIcons: [],
-	shopLeave: null,
+		shopBg: null,
+		shopButtons: [],
+		shopTexts: [],
+		shopIcons: [],
+		shopLeave: null,
 
-	mainMusic: null,
+		mainMusic: null,
+	};
+
+	menuBg = null;
+	startButton = null;
+
+	if (!didAnims) {
+		didAnims = true;
+
+		function createAnimFromSheet(name, frames, repeat=-1, frameRate=10) {
+			scene.anims.create({
+				key: name,
+				frames: frames,
+				frameRate: frameRate,
+				repeat: repeat,
+			});
+		}
+
+		function createAnim(name, numFrames, repeat=-1, frameRate=10) {
+			scene.anims.create({
+				key: name,
+				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
+				frameRate: frameRate,
+				repeat: repeat,
+			});
+		}
+
+		createAnimFromSheet("explosion1", [
+			{key: "sprites", frame: "sprites/explosion1_0"},
+			{key: "sprites", frame: "sprites/explosion1_1"},
+			{key: "sprites", frame: "sprites/explosion1_2"},
+			{key: "sprites", frame: "sprites/explosion1_3"}
+		]);
+
+		createAnimFromSheet("projectile1", [
+			{key: "sprites", frame: "sprites/projectile1_0"},
+			{key: "sprites", frame: "sprites/projectile1_1"},
+			{key: "sprites", frame: "sprites/projectile1_2"},
+			{key: "sprites", frame: "sprites/projectile1_3"}
+		]);
+
+		createAnimFromSheet("projectile2", [
+			{key: "sprites", frame: "sprites/projectile2_0"},
+			{key: "sprites", frame: "sprites/projectile2_1"},
+			{key: "sprites", frame: "sprites/projectile2_2"},
+			{key: "sprites", frame: "sprites/projectile2_3"}
+		]);
+
+		createAnimFromSheet("projectile3", [
+			{key: "sprites", frame: "sprites/projectile3_0"},
+			{key: "sprites", frame: "sprites/projectile3_1"},
+			{key: "sprites", frame: "sprites/projectile3_2"},
+			{key: "sprites", frame: "sprites/projectile3_3"}
+		]);
+
+		createAnimFromSheet("projectile4", [
+			{key: "sprites", frame: "sprites/projectile4_0"},
+			{key: "sprites", frame: "sprites/projectile4_1"},
+			{key: "sprites", frame: "sprites/projectile4_2"},
+			{key: "sprites", frame: "sprites/projectile4_3"}
+		]);
+
+		createAnimFromSheet("iceParticle", [
+			{key: "sprites", frame: "sprites/iceParticle_0"},
+			{key: "sprites", frame: "sprites/iceParticle_1"},
+			{key: "sprites", frame: "sprites/iceParticle_2"},
+			{key: "sprites", frame: "sprites/iceParticle_3"}
+		]);
+
+		createAnimFromSheet("spreadParticle", [
+			{key: "sprites", frame: "sprites/spreadParticle_0"},
+			{key: "sprites", frame: "sprites/spreadParticle_1"},
+			{key: "sprites", frame: "sprites/spreadParticle_2"},
+			{key: "sprites", frame: "sprites/spreadParticle_3"}
+		]);
+
+		createAnimFromSheet("fireParticle1", [
+			{key: "sprites", frame: "sprites/fireParticle1_0"},
+			{key: "sprites", frame: "sprites/fireParticle1_1"},
+			{key: "sprites", frame: "sprites/fireParticle1_2"},
+			{key: "sprites", frame: "sprites/fireParticle1_3"}
+		]);
+
+		createAnimFromSheet("fireParticle2", [
+			{key: "sprites", frame: "sprites/fireParticle2_0"},
+			{key: "sprites", frame: "sprites/fireParticle2_1"},
+			{key: "sprites", frame: "sprites/fireParticle2_2"},
+			{key: "sprites", frame: "sprites/fireParticle2_3"}
+		]);
+
+		createAnimFromSheet("electricParticle", [
+			{key: "sprites", frame: "sprites/electricParticle_0"},
+			{key: "sprites", frame: "sprites/electricParticle_1"},
+			{key: "sprites", frame: "sprites/electricParticle_2"},
+			{key: "sprites", frame: "sprites/electricParticle_3"}
+		], -1, 20);
+
+		createAnimFromSheet("iceParticleShatter", [
+			{key: "sprites", frame: "sprites/iceParticleShatter_0"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_1"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_2"},
+			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
+		], 0);
+
+		createAnimFromSheet("spreadParticleShatter", [
+			{key: "sprites", frame: "sprites/spreadParticleShatter_0"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_1"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_2"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_3"}
+		], 0);
+
+		createAnimFromSheet("fireParticleShatter", [
+			{key: "sprites", frame: "sprites/fireParticleShatter_0"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_1"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_2"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_3"}
+		], 0);
+
+		createAnimFromSheet("iceEnemyExplosion", [
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_0"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_1"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_2"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_3"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_4"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_5"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_6"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_7"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_8"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyExplosion", [
+			{key: "sprites", frame: "sprites/enemy1Explosion_0"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_1"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_2"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_3"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_4"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_5"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_6"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_7"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_8"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_9"}
+		], 0);
+
+		createAnimFromSheet("projectile1Explosion", [
+			{key: "sprites", frame: "sprites/projectile1Explosion_0"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_1"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_2"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_3"}
+		], 0);
+
+		createAnimFromSheet("playerIdle", [
+			{key: "sprites", frame: "sprites/playerIdle_0"},
+			{key: "sprites", frame: "sprites/playerIdle_1"},
+			{key: "sprites", frame: "sprites/playerIdle_2"},
+			{key: "sprites", frame: "sprites/playerIdle_3"}
+		]);
+
+		createAnimFromSheet("playerWalk", [
+			{key: "sprites", frame: "sprites/playerWalk_0"},
+			{key: "sprites", frame: "sprites/playerWalk_1"},
+			{key: "sprites", frame: "sprites/playerWalk_2"},
+			{key: "sprites", frame: "sprites/playerWalk_3"}
+		]);
+
+		createAnimFromSheet("playerDeath", [
+			{key: "sprites", frame: "sprites/playerDeath_0"},
+			{key: "sprites", frame: "sprites/playerDeath_1"},
+			{key: "sprites", frame: "sprites/playerDeath_2"},
+			{key: "sprites", frame: "sprites/playerDeath_3"}
+		], 0);
+
+		createAnimFromSheet("enemy1Idle", [
+			{key: "sprites", frame: "sprites/enemy1Idle_0"},
+			{key: "sprites", frame: "sprites/enemy1Idle_1"},
+			{key: "sprites", frame: "sprites/enemy1Idle_2"},
+			{key: "sprites", frame: "sprites/enemy1Idle_3"}
+		]);
+
+		createAnimFromSheet("enemy1Attack", [
+			{key: "sprites", frame: "sprites/enemy1Attack_0"},
+			{key: "sprites", frame: "sprites/enemy1Attack_1"},
+			{key: "sprites", frame: "sprites/enemy1Attack_2"},
+			{key: "sprites", frame: "sprites/enemy1Attack_3"}
+		], 0, 20);
+
+		createAnimFromSheet("enemy1Death", [
+			{key: "sprites", frame: "sprites/enemy1Death_0"},
+			{key: "sprites", frame: "sprites/enemy1Death_1"},
+			{key: "sprites", frame: "sprites/enemy1Death_2"},
+			{key: "sprites", frame: "sprites/enemy1Death_3"}
+		], 0);
+
+		createAnimFromSheet("enemy2Idle", [
+			{key: "sprites", frame: "sprites/enemy2Idle_0"},
+			{key: "sprites", frame: "sprites/enemy2Idle_1"},
+			{key: "sprites", frame: "sprites/enemy2Idle_2"},
+			{key: "sprites", frame: "sprites/enemy2Idle_3"}
+		]);
+
+		createAnimFromSheet("enemy2Attack", [
+			{key: "sprites", frame: "sprites/enemy2Attack_0"},
+			{key: "sprites", frame: "sprites/enemy2Attack_1"},
+			{key: "sprites", frame: "sprites/enemy2Attack_2"},
+			{key: "sprites", frame: "sprites/enemy2Attack_3"}
+		], 0);
+
+		createAnimFromSheet("enemy2Death", [
+			{key: "sprites", frame: "sprites/enemy2Death_0"},
+			{key: "sprites", frame: "sprites/enemy2Death_1"},
+			{key: "sprites", frame: "sprites/enemy2Death_2"},
+			{key: "sprites", frame: "sprites/enemy2Death_3"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyIdle", [
+			{key: "sprites", frame: "sprites/fireEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/fireEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("fireEnemyAttack", [
+			{key: "sprites", frame: "sprites/fireEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/fireEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyDeath", [
+			{key: "sprites", frame: "sprites/fireEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/fireEnemyDeath_3"}
+		], 0);
+
+		createAnimFromSheet("spreadEnemyIdle", [
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("spreadEnemyAttack", [
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("spreadEnemyDeath", [
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_3"}
+		], 0);
+
+		createAnimFromSheet("electricEnemyIdle", [
+			{key: "sprites", frame: "sprites/electricEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/electricEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("electricEnemyAttack", [
+			{key: "sprites", frame: "sprites/electricEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/electricEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("electricEnemyDeath", [
+			{key: "sprites", frame: "sprites/electricEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/electricEnemyDeath_3"}
+		], 0);
+
+		createAnimFromSheet("shieldEnemyIdle", [
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_3"}
+		]);
+	}
 }
 
 let scene = null;
@@ -137,6 +422,8 @@ function preload() {
 }
 
 function create() {
+	log("In create");
+	resetGame();
 }
 
 function playSound(id, loops=false) {
@@ -180,7 +467,10 @@ function createHpBar(target) {
 }
 
 function playerAnimCallback(anim) {
-	if (anim.key == "playerDeath") game.player.destroy();
+	if (anim.key == "playerDeath") {
+		game.player.destroy();
+		scene.scene.restart();
+	}
 }
 
 function effectAnimCallback(effect, anim) {
@@ -500,280 +790,6 @@ function update(delta) {
 		game.mainMusic.play();
 		game.mainMusic.setVolume(SOUND_MAIN_MUSIC_VOLUME);
 
-		function createAnimFromSheet(name, frames, repeat=-1, frameRate=10) {
-			scene.anims.create({
-				key: name,
-				frames: frames,
-				frameRate: frameRate,
-				repeat: repeat,
-			});
-		}
-
-		function createAnim(name, numFrames, repeat=-1, frameRate=10) {
-			scene.anims.create({
-				key: name,
-				frames: scene.anims.generateFrameNumbers(name, {start: 0, end: numFrames}),
-				frameRate: frameRate,
-				repeat: repeat,
-			});
-		}
-
-		createAnimFromSheet("explosion1", [
-			{key: "sprites", frame: "sprites/explosion1_0"},
-			{key: "sprites", frame: "sprites/explosion1_1"},
-			{key: "sprites", frame: "sprites/explosion1_2"},
-			{key: "sprites", frame: "sprites/explosion1_3"}
-		]);
-
-		createAnimFromSheet("projectile1", [
-			{key: "sprites", frame: "sprites/projectile1_0"},
-			{key: "sprites", frame: "sprites/projectile1_1"},
-			{key: "sprites", frame: "sprites/projectile1_2"},
-			{key: "sprites", frame: "sprites/projectile1_3"}
-		]);
-
-		createAnimFromSheet("projectile2", [
-			{key: "sprites", frame: "sprites/projectile2_0"},
-			{key: "sprites", frame: "sprites/projectile2_1"},
-			{key: "sprites", frame: "sprites/projectile2_2"},
-			{key: "sprites", frame: "sprites/projectile2_3"}
-		]);
-
-		createAnimFromSheet("projectile3", [
-			{key: "sprites", frame: "sprites/projectile3_0"},
-			{key: "sprites", frame: "sprites/projectile3_1"},
-			{key: "sprites", frame: "sprites/projectile3_2"},
-			{key: "sprites", frame: "sprites/projectile3_3"}
-		]);
-
-		createAnimFromSheet("projectile4", [
-			{key: "sprites", frame: "sprites/projectile4_0"},
-			{key: "sprites", frame: "sprites/projectile4_1"},
-			{key: "sprites", frame: "sprites/projectile4_2"},
-			{key: "sprites", frame: "sprites/projectile4_3"}
-		]);
-
-		createAnimFromSheet("iceParticle", [
-			{key: "sprites", frame: "sprites/iceParticle_0"},
-			{key: "sprites", frame: "sprites/iceParticle_1"},
-			{key: "sprites", frame: "sprites/iceParticle_2"},
-			{key: "sprites", frame: "sprites/iceParticle_3"}
-		]);
-
-		createAnimFromSheet("spreadParticle", [
-			{key: "sprites", frame: "sprites/spreadParticle_0"},
-			{key: "sprites", frame: "sprites/spreadParticle_1"},
-			{key: "sprites", frame: "sprites/spreadParticle_2"},
-			{key: "sprites", frame: "sprites/spreadParticle_3"}
-		]);
-
-		createAnimFromSheet("fireParticle1", [
-			{key: "sprites", frame: "sprites/fireParticle1_0"},
-			{key: "sprites", frame: "sprites/fireParticle1_1"},
-			{key: "sprites", frame: "sprites/fireParticle1_2"},
-			{key: "sprites", frame: "sprites/fireParticle1_3"}
-		]);
-
-		createAnimFromSheet("fireParticle2", [
-			{key: "sprites", frame: "sprites/fireParticle2_0"},
-			{key: "sprites", frame: "sprites/fireParticle2_1"},
-			{key: "sprites", frame: "sprites/fireParticle2_2"},
-			{key: "sprites", frame: "sprites/fireParticle2_3"}
-		]);
-
-		createAnimFromSheet("electricParticle", [
-			{key: "sprites", frame: "sprites/electricParticle_0"},
-			{key: "sprites", frame: "sprites/electricParticle_1"},
-			{key: "sprites", frame: "sprites/electricParticle_2"},
-			{key: "sprites", frame: "sprites/electricParticle_3"}
-		], -1, 20);
-
-		createAnimFromSheet("iceParticleShatter", [
-			{key: "sprites", frame: "sprites/iceParticleShatter_0"},
-			{key: "sprites", frame: "sprites/iceParticleShatter_1"},
-			{key: "sprites", frame: "sprites/iceParticleShatter_2"},
-			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
-		], 0);
-
-		createAnimFromSheet("spreadParticleShatter", [
-			{key: "sprites", frame: "sprites/spreadParticleShatter_0"},
-			{key: "sprites", frame: "sprites/spreadParticleShatter_1"},
-			{key: "sprites", frame: "sprites/spreadParticleShatter_2"},
-			{key: "sprites", frame: "sprites/spreadParticleShatter_3"}
-		], 0);
-
-		createAnimFromSheet("fireParticleShatter", [
-			{key: "sprites", frame: "sprites/fireParticleShatter_0"},
-			{key: "sprites", frame: "sprites/fireParticleShatter_1"},
-			{key: "sprites", frame: "sprites/fireParticleShatter_2"},
-			{key: "sprites", frame: "sprites/fireParticleShatter_3"}
-		], 0);
-
-		createAnimFromSheet("iceEnemyExplosion", [
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_0"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_1"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_2"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_3"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_4"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_5"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_6"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_7"},
-			{key: "sprites", frame: "sprites/iceEnemyExplosion_8"}
-		], 0);
-
-		createAnimFromSheet("fireEnemyExplosion", [
-			{key: "sprites", frame: "sprites/enemy1Explosion_0"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_1"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_2"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_3"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_4"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_5"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_6"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_7"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_8"},
-			{key: "sprites", frame: "sprites/enemy1Explosion_9"}
-		], 0);
-
-		createAnimFromSheet("projectile1Explosion", [
-			{key: "sprites", frame: "sprites/projectile1Explosion_0"},
-			{key: "sprites", frame: "sprites/projectile1Explosion_1"},
-			{key: "sprites", frame: "sprites/projectile1Explosion_2"},
-			{key: "sprites", frame: "sprites/projectile1Explosion_3"}
-		], 0);
-
-		createAnimFromSheet("playerIdle", [
-			{key: "sprites", frame: "sprites/playerIdle_0"},
-			{key: "sprites", frame: "sprites/playerIdle_1"},
-			{key: "sprites", frame: "sprites/playerIdle_2"},
-			{key: "sprites", frame: "sprites/playerIdle_3"}
-		]);
-
-		createAnimFromSheet("playerWalk", [
-			{key: "sprites", frame: "sprites/playerWalk_0"},
-			{key: "sprites", frame: "sprites/playerWalk_1"},
-			{key: "sprites", frame: "sprites/playerWalk_2"},
-			{key: "sprites", frame: "sprites/playerWalk_3"}
-		]);
-
-		createAnimFromSheet("playerDeath", [
-			{key: "sprites", frame: "sprites/playerDeath_0"},
-			{key: "sprites", frame: "sprites/playerDeath_1"},
-			{key: "sprites", frame: "sprites/playerDeath_2"},
-			{key: "sprites", frame: "sprites/playerDeath_3"}
-		], 0);
-
-		createAnimFromSheet("enemy1Idle", [
-			{key: "sprites", frame: "sprites/enemy1Idle_0"},
-			{key: "sprites", frame: "sprites/enemy1Idle_1"},
-			{key: "sprites", frame: "sprites/enemy1Idle_2"},
-			{key: "sprites", frame: "sprites/enemy1Idle_3"}
-		]);
-
-		createAnimFromSheet("enemy1Attack", [
-			{key: "sprites", frame: "sprites/enemy1Attack_0"},
-			{key: "sprites", frame: "sprites/enemy1Attack_1"},
-			{key: "sprites", frame: "sprites/enemy1Attack_2"},
-			{key: "sprites", frame: "sprites/enemy1Attack_3"}
-		], 0, 20);
-
-		createAnimFromSheet("enemy1Death", [
-			{key: "sprites", frame: "sprites/enemy1Death_0"},
-			{key: "sprites", frame: "sprites/enemy1Death_1"},
-			{key: "sprites", frame: "sprites/enemy1Death_2"},
-			{key: "sprites", frame: "sprites/enemy1Death_3"}
-		], 0);
-
-		createAnimFromSheet("enemy2Idle", [
-			{key: "sprites", frame: "sprites/enemy2Idle_0"},
-			{key: "sprites", frame: "sprites/enemy2Idle_1"},
-			{key: "sprites", frame: "sprites/enemy2Idle_2"},
-			{key: "sprites", frame: "sprites/enemy2Idle_3"}
-		]);
-
-		createAnimFromSheet("enemy2Attack", [
-			{key: "sprites", frame: "sprites/enemy2Attack_0"},
-			{key: "sprites", frame: "sprites/enemy2Attack_1"},
-			{key: "sprites", frame: "sprites/enemy2Attack_2"},
-			{key: "sprites", frame: "sprites/enemy2Attack_3"}
-		], 0);
-
-		createAnimFromSheet("enemy2Death", [
-			{key: "sprites", frame: "sprites/enemy2Death_0"},
-			{key: "sprites", frame: "sprites/enemy2Death_1"},
-			{key: "sprites", frame: "sprites/enemy2Death_2"},
-			{key: "sprites", frame: "sprites/enemy2Death_3"}
-		], 0);
-
-		createAnimFromSheet("fireEnemyIdle", [
-			{key: "sprites", frame: "sprites/fireEnemyIdle_0"},
-			{key: "sprites", frame: "sprites/fireEnemyIdle_1"},
-			{key: "sprites", frame: "sprites/fireEnemyIdle_2"},
-			{key: "sprites", frame: "sprites/fireEnemyIdle_3"}
-		]);
-
-		createAnimFromSheet("fireEnemyAttack", [
-			{key: "sprites", frame: "sprites/fireEnemyAttack_0"},
-			{key: "sprites", frame: "sprites/fireEnemyAttack_1"},
-			{key: "sprites", frame: "sprites/fireEnemyAttack_2"},
-			{key: "sprites", frame: "sprites/fireEnemyAttack_3"}
-		], 0);
-
-		createAnimFromSheet("fireEnemyDeath", [
-			{key: "sprites", frame: "sprites/fireEnemyDeath_0"},
-			{key: "sprites", frame: "sprites/fireEnemyDeath_1"},
-			{key: "sprites", frame: "sprites/fireEnemyDeath_2"},
-			{key: "sprites", frame: "sprites/fireEnemyDeath_3"}
-		], 0);
-
-		createAnimFromSheet("spreadEnemyIdle", [
-			{key: "sprites", frame: "sprites/spreadEnemyIdle_0"},
-			{key: "sprites", frame: "sprites/spreadEnemyIdle_1"},
-			{key: "sprites", frame: "sprites/spreadEnemyIdle_2"},
-			{key: "sprites", frame: "sprites/spreadEnemyIdle_3"}
-		]);
-
-		createAnimFromSheet("spreadEnemyAttack", [
-			{key: "sprites", frame: "sprites/spreadEnemyAttack_0"},
-			{key: "sprites", frame: "sprites/spreadEnemyAttack_1"},
-			{key: "sprites", frame: "sprites/spreadEnemyAttack_2"},
-			{key: "sprites", frame: "sprites/spreadEnemyAttack_3"}
-		], 0);
-
-		createAnimFromSheet("spreadEnemyDeath", [
-			{key: "sprites", frame: "sprites/spreadEnemyDeath_0"},
-			{key: "sprites", frame: "sprites/spreadEnemyDeath_1"},
-			{key: "sprites", frame: "sprites/spreadEnemyDeath_2"},
-			{key: "sprites", frame: "sprites/spreadEnemyDeath_3"}
-		], 0);
-
-		createAnimFromSheet("electricEnemyIdle", [
-			{key: "sprites", frame: "sprites/electricEnemyIdle_0"},
-			{key: "sprites", frame: "sprites/electricEnemyIdle_1"},
-			{key: "sprites", frame: "sprites/electricEnemyIdle_2"},
-			{key: "sprites", frame: "sprites/electricEnemyIdle_3"}
-		]);
-
-		createAnimFromSheet("electricEnemyAttack", [
-			{key: "sprites", frame: "sprites/electricEnemyAttack_0"},
-			{key: "sprites", frame: "sprites/electricEnemyAttack_1"},
-			{key: "sprites", frame: "sprites/electricEnemyAttack_2"},
-			{key: "sprites", frame: "sprites/electricEnemyAttack_3"}
-		], 0);
-
-		createAnimFromSheet("electricEnemyDeath", [
-			{key: "sprites", frame: "sprites/electricEnemyDeath_0"},
-			{key: "sprites", frame: "sprites/electricEnemyDeath_1"},
-			{key: "sprites", frame: "sprites/electricEnemyDeath_2"},
-			{key: "sprites", frame: "sprites/electricEnemyDeath_3"}
-		], 0);
-
-		createAnimFromSheet("shieldEnemyIdle", [
-			{key: "sprites", frame: "sprites/shieldEnemyIdle_0"},
-			{key: "sprites", frame: "sprites/shieldEnemyIdle_1"},
-			{key: "sprites", frame: "sprites/shieldEnemyIdle_2"},
-			{key: "sprites", frame: "sprites/shieldEnemyIdle_3"}
-		]);
-
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
 
@@ -835,7 +851,9 @@ function update(delta) {
 	game.time = phaser.loop.time;
 	game.elapsed = phaser.loop.delta / 1000; // Probably should be hardcoded to 1/60
 
-	if (game.inShop) {
+	if (game.inMenu) {
+		updateMenu();
+	} else if (game.inShop) {
 		updateShop();
 	} else {
 		updateGame();
@@ -915,6 +933,27 @@ function startShop() {
 	game.shopLeave.y = game.height - game.shopLeave.height/2;
 }
 
+var menuBg = null;
+var startButton = null;
+function updateMenu() {
+	if (!menuBg) menuBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
+	menuBg.x = menuBg.width/2;
+	menuBg.y = menuBg.height/2;
+	menuBg.depth = 2;
+
+	if (!startButton) startButton = scene.add.image(0, 0, "sprites", "sprites/startButton");
+	startButton.x = game.width/2;
+	startButton.y = game.height*0.75;
+	startButton.depth = 2;
+
+	if (game.mouseJustDown && spriteContainsPoint(startButton, game.mouseX, game.mouseY)) {
+		playSound("mouseSelect");
+		game.inMenu = false;
+		menuBg.destroy();
+		startButton.destroy();
+	}
+}
+
 function updateShop() {
 	game.shopButtons.forEach(function(btn, i) {
 		if (spriteContainsPoint(btn, game.mouseX, game.mouseY)) {
@@ -990,11 +1029,11 @@ function updateGame() {
 		game.currentWeapon = 4;
 	}
 
-	if (space) {
-		game.enemies.forEach(function(enemy) {
-			enemy.udata.hp = 0;
-		});
-	}
+	// if (space) {
+	// 	game.enemies.forEach(function(enemy) {
+	// 		enemy.udata.hp = 0;
+	// 	});
+	// }
 
 	game.lineProgress += 0.0001;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
