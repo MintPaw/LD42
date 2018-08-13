@@ -5,13 +5,13 @@ all:
 	$(MAKE) r
 
 processAudio:
-	IFS=$$'\n'; \
-	for file in `find sourceAssets/audio/ -type f -name "*.wav"`; do \
-		echo "$$file"; \
-		ffmpeg -i "$$file" -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y; \
-		echo "good"; \
-	done; \
-	wait;
+	# IFS=$$'\n'; \
+	# for file in `find sourceAssets/audio/ -type f -name "*.wav"`; do \
+	# 	echo "$$file"; \
+	# 	ffmpeg -i "$$file" -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y; \
+	# 	echo "good"; \
+	# done; \
+	# wait;
 
 
 b:

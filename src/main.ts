@@ -1189,7 +1189,7 @@ function updateGame() {
 					let endOff = ENEMY_SPREAD_DEGREE_RANGE;
 					let angleOff = map(i, 0, shots, startOff, endOff);
 
-					let bullet = shootBullet("spread", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
+					let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
 					bullet.udata.speed = SPREAD_SHOT_ENEMY_SPEED;
 				}
 				enemy.anims.play("spreadEnemyAttack");
