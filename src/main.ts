@@ -959,7 +959,7 @@ function startShop() {
 
 	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Spread ammo + 20", "Lightning ammo + 20", "Recover health"];
 	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo", "health"];
-	let iconPaths = ["sprites/FireAmmo", "sprites/IceAmmo", "sprites/SpreadAmmo", "sprites/LightningAmmo", "sprites/Medkit"];
+	let iconPaths = ["sprites/FireAmmo", "sprites/IceAmmo", "sprites/SpreadAmmo", "sprites/LightningAmmo", "sprites/MedKit"];
 	let prices = [FIRE_PRICE, ICE_PRICE, SPREAD_PRICE, ELECTRIC_PRICE, HP_PRICE];
 	let cols = 3;
 	let rows = 3;
@@ -1141,11 +1141,11 @@ function updateGame() {
 		game.currentWeapon = 4;
 	}
 
-	if (space) {
-		game.enemies.forEach(function(enemy) {
-			enemy.udata.hp = 0;
-		});
-	}
+	// if (space) {
+	// 	game.enemies.forEach(function(enemy) {
+	// 		enemy.udata.hp = 0;
+	// 	});
+	// }
 
 	game.lineProgress += 0.0001 * SHIELD_SPEED_MULTIPLIER;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
