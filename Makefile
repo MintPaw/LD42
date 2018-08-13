@@ -20,6 +20,7 @@ b:
 	-mkdir bin/assets/audio
 	cp sourceAssets/audio/*.ogg bin/assets/audio
 	cp -r sourceAssets/maps bin/assets
+	cp -r sourceAssets/fonts bin/assets
 	cp sourceAssets/*.png bin/assets
 	cp buildSystem/phaser.d.ts src
 	

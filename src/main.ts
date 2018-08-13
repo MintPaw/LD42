@@ -95,11 +95,10 @@ function preload() {
 	scene = this;
 
 	scene.load.atlas("sprites", "assets/sprites.png", "assets/sprites.json");
-	// scene.load.atlas("minimap", "assets/minimap.png", "assets/minimap.json");
-	// scene.load.atlas("ui", "assets/ui.png", "assets/ui.json");
-	// scene.load.atlas("particles", "assets/particles.png", "assets/particles.json");
 	scene.load.image("tileset", "assets/tileset.png");
 	scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
+
+	scene.load.bitmapFont("testFont", "assets/fonts/testFont_0.png", "assets/fonts/testFont.xml");
 
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
@@ -668,10 +667,10 @@ function update(delta) {
 		scene.cameras.main.scrollX = -scene.cameras.main.width/game.scaleFactor;
 		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
 
-		game.debugText = scene.add.text(0, 0, "Debug text", {font: "9px Arial"});
+		game.debugText = scene.add.bitmapText(0, 0, "testFont", "Debug text");
 		game.debugText.depth = 1;
 
-		game.tooltipText = scene.add.text(0, 0, "Tooltip", {font: "18px Arial"});
+		game.tooltipText = scene.add.bitmapText(0, 0, "testFont", "Tooltip");
 		game.tooltipText.depth = 1;
 
 		startLevel(1);
