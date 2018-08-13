@@ -170,6 +170,10 @@ function enemyAnimCallback(enemy, anim) {
 		enemy.destroy();
 		game.money += 10;
 	}
+	if (anim.key == "spreadEnemyDeath") {
+		enemy.destroy();
+		game.money += 10;
+	}
 
 }
 
@@ -203,8 +207,8 @@ function createEnemy(enemyType, xpos, ypos) {
 		enemyData.bulletDelayMax = 0.25;
 		enemyData.walkSpeed = 3;
 	} else if (enemyType == "spread") {
-		enemy = scene.add.sprite(0, 0, "enemy1Idle")
-		enemy.anims.play("enemy1Idle", true);
+		enemy = scene.add.sprite(0, 0, "spreadEnemyIdle")
+		enemy.anims.play("spreadEnemyIdle", true);
 		enemyData.bulletDelayMax = 3;
 		enemyData.walkSpeed = 1;
 	} else if (enemyType == "ice") {
@@ -294,8 +298,8 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		bullet = scene.add.sprite(0, 0, "fireParticle1").play("fireParticle1");
 	} else if (bulletType == "ice") {
 		bullet = scene.add.sprite(0, 0, "iceParticle").play("iceParticle");
-	} else if (bulletType == "split") {
-		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+	} else if (bulletType == "spread") {
+		bullet = scene.add.sprite(0, 0, "spreadParticle").play("spreadParticle");
 	} else if (bulletType == "lightning") {
 		bullet = scene.add.sprite(0, 0, "electricParticle").play("electricParticle");
 	} else {
@@ -341,10 +345,10 @@ function bulletHit(unit, bullet) {
 		unit.udata.iceTicks += 120;
 	}
 
-	if (bullet.udata.type == "split") {
+	if (bullet.udata.type == "spread") {
 		let angles = [45, 90+45, 180+45, 270+45];
 		for (let i = 0; i < angles.length; i++) {
-			let bullet = shootBullet("default", unit.x, unit.y, angles[i], true);
+			let bullet = shootBullet("spread", unit.x, unit.y, angles[i], true);
 			bullet.udata.ignoreEnemy = unit;
 		}
 	}
@@ -365,6 +369,9 @@ function destroyEnemy(enemy) {
 		effectName = "fireEnemyExplosion";
 	} else if (enemy.udata.type == "electric") {
 		enemy.anims.play("electricEnemyDeath", true);
+		effectName = "fireEnemyExplosion";
+	} else if (enemy.udata.type == "spread") {
+		enemy.anims.play("spreadEnemyDeath", true);
 		effectName = "fireEnemyExplosion";
 	} else {
 		enemy.anims.play("enemy1Death", true);
@@ -389,6 +396,7 @@ function destroyBullet(bullet) {
 	var effect = null;
 	if (bullet.udata.type == "fire") effect = scene.add.sprite(0, 0, "fireParticleShatter").play("fireParticleShatter");
 	if (bullet.udata.type == "ice") effect = scene.add.sprite(0, 0, "iceParticleShatter").play("iceParticleShatter");
+	if (bullet.udata.type == "spread") effect = scene.add.sprite(0, 0, "spreadParticleShatter").play("spreadParticleShatter");
 	else effect = scene.add.sprite(0, 0, "projectile1Explosion").play("projectile1Explosion");
 
 	if (effect) {
@@ -509,6 +517,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticle_3"}
 		]);
 
+		createAnimFromSheet("spreadParticle", [
+			{key: "sprites", frame: "sprites/spreadParticle_0"},
+			{key: "sprites", frame: "sprites/spreadParticle_1"},
+			{key: "sprites", frame: "sprites/spreadParticle_2"},
+			{key: "sprites", frame: "sprites/spreadParticle_3"}
+		]);
+
 		createAnimFromSheet("fireParticle1", [
 			{key: "sprites", frame: "sprites/fireParticle1_0"},
 			{key: "sprites", frame: "sprites/fireParticle1_1"},
@@ -535,6 +550,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticleShatter_1"},
 			{key: "sprites", frame: "sprites/iceParticleShatter_2"},
 			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
+		], 0);
+
+		createAnimFromSheet("spreadParticleShatter", [
+			{key: "sprites", frame: "sprites/spreadParticleShatter_0"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_1"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_2"},
+			{key: "sprites", frame: "sprites/spreadParticleShatter_3"}
 		], 0);
 
 		createAnimFromSheet("fireParticleShatter", [
@@ -660,6 +682,27 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/fireEnemyDeath_3"}
 		], 0);
 
+		createAnimFromSheet("spreadEnemyIdle", [
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyIdle_3"}
+		]);
+
+		createAnimFromSheet("spreadEnemyAttack", [
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyAttack_3"}
+		], 0);
+
+		createAnimFromSheet("spreadEnemyDeath", [
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_0"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_1"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_2"},
+			{key: "sprites", frame: "sprites/spreadEnemyDeath_3"}
+		], 0);
+
 		createAnimFromSheet("electricEnemyIdle", [
 			{key: "sprites", frame: "sprites/electricEnemyIdle_0"},
 			{key: "sprites", frame: "sprites/electricEnemyIdle_1"},
@@ -771,7 +814,7 @@ function update(delta) {
 	if (game.currentWeapon == 0) currentWeaponStr = "Default";
 	if (game.currentWeapon == 1) currentWeaponStr = "Fire";
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
-	if (game.currentWeapon == 3) currentWeaponStr = "Split";
+	if (game.currentWeapon == 3) currentWeaponStr = "Spread";
 	if (game.currentWeapon == 4) currentWeaponStr = "Lightning";
 	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount+"\nMoney: "+game.money);
 
@@ -787,7 +830,7 @@ function startShop() {
 	game.shopBg.x = game.shopBg.width/2;
 	game.shopBg.y = game.shopBg.height/2;
 
-	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Split ammo + 20", "Lightning ammo + 20"];
+	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Spread ammo + 20", "Lightning ammo + 20"];
 	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo"];
 	let iconPaths = ["sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton"];
 	let prices = [10, 20, 30, 40];
@@ -1016,7 +1059,7 @@ function updateGame() {
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 3) {
 			game.bulletDelay = 0.25;
-			let bullet = shootBullet("split", gun.x, gun.y, mouseDeg, true);
+			let bullet = shootBullet("spread", gun.x, gun.y, mouseDeg, true);
 			bullet.udata.speed = 5;
 			game.ammo[game.currentWeapon]--;
 		} else if (game.currentWeapon == 4) {
@@ -1097,10 +1140,10 @@ function updateGame() {
 					let endOff = 30;
 					let angleOff = map(i, 0, shots, startOff, endOff);
 
-					let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
+					let bullet = shootBullet("spread", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
 					bullet.udata.speed = 2;
 				}
-				enemy.anims.play("enemy1Attack");
+				enemy.anims.play("spreadEnemyAttack");
 			}
 
 			if (enemy.udata.type == "ice") {
