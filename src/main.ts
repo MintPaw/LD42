@@ -86,6 +86,7 @@ let game = {
 
 	shopBg: null,
 	shopButtons: [],
+	shopTexts: [],
 	shopLeave: null,
 
 	mainMusic: null,
@@ -101,6 +102,7 @@ function preload() {
 	scene.load.tilemapTiledJSON("map1", "assets/maps/map1.json");
 
 	scene.load.bitmapFont("testFont", "assets/fonts/testFont_0.png", "assets/fonts/testFont.xml");
+	scene.load.bitmapFont("defaultFont", "assets/fonts/defaultFont_0.png", "assets/fonts/defaultFont.xml");
 
 	function addAudio(name, path, instances=1) {
 		scene.load.audio(name, [path], {instances: instances});
@@ -638,10 +640,10 @@ function update(delta) {
 		scene.cameras.main.scrollX = -scene.cameras.main.width/game.scaleFactor;
 		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
 
-		game.debugText = scene.add.bitmapText(0, 0, "testFont", "Debug text");
+		game.debugText = scene.add.bitmapText(0, 0, "defaultFont", "Debug text");
 		game.debugText.depth = 1;
 
-		game.tooltipText = scene.add.bitmapText(0, 0, "testFont", "Tooltip");
+		game.tooltipText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
 		game.tooltipText.depth = 1;
 
 		game.shieldEnemy = scene.add.sprite(0, 0, "shieldEnemyIdle").play("shieldEnemyIdle");
@@ -699,6 +701,7 @@ function startShop() {
 
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
+
 			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
 			let index = (x % cols) + (y * cols);
 			btn.udata = {
@@ -711,6 +714,12 @@ function startShop() {
 			btn.x = x * (btn.width + pad) + (game.width/2 - totalW/2) + btn.width/2;
 			btn.y = y * (btn.height + pad) + (game.height/2 - totalH/2) + btn.height/2 + 30;
 			game.shopButtons.push(btn);
+
+			let tf = scene.add.bitmapText(0, 0, "defaultFont", "$"+btn.udata.price);
+			tf.scaleX = tf.scaleY = 1/3;
+			tf.x = btn.x - tf.width/2;
+			tf.y = btn.y + btn.height/2 - tf.height - 1;
+			game.shopTexts.push(tf);
 		}
 	}
 
@@ -742,7 +751,11 @@ function updateShop() {
 			game.shopButtons.forEach(function(btn) {
 				btn.destroy();
 			});
+			game.shopTexts.forEach(function(tf) {
+				tf.destroy();
+			});
 			game.shopButtons = [];
+			game.shopTexts = [];
 			game.shopBg.destroy();
 			game.shopLeave.destroy();
 			game.inShop = false;
