@@ -145,6 +145,10 @@ function playerAnimCallback(anim) {
 	if (anim.key == "playerDeath") game.player.destroy();
 }
 
+function effectAnimCallback(effect, anim) {
+	effect.destroy();
+}
+
 function enemyAnimCallback(enemy, anim) {
 	if (anim.key == "enemy1Attack") enemy.anims.play("enemy1Idle");
 	if (anim.key == "enemy2Attack") enemy.anims.play("enemy2Idle");
@@ -175,6 +179,7 @@ function createEnemy(enemyType, xpos, ypos) {
 		type: enemyType,
 		hp: 10,
 		maxHp: 10,
+		dead: false,
 		bulletDelayMax: 0,
 		bulletDelay: 0,
 		pattern: "none",
@@ -344,6 +349,55 @@ function bulletHit(unit, bullet) {
 		}
 	}
 
+	destroyBullet(bullet);
+}
+
+function destroyEnemy(enemy) {
+	if (enemy.udata.dead) return;
+	enemy.udata.dead = true;
+
+	let effectName = null;
+	if (enemy.udata.type == "ice") {
+		effectName = "iceEnemyExplosion";
+		enemy.anims.play("enemy2Death", true);
+	} else if (enemy.udata.type == "fire") {
+		enemy.anims.play("fireEnemyDeath", true);
+		effectName = "fireEnemyExplosion";
+	} else if (enemy.udata.type == "electric") {
+		enemy.anims.play("electricEnemyDeath", true);
+		effectName = "fireEnemyExplosion";
+	} else {
+		enemy.anims.play("enemy1Death", true);
+		effectName = "fireEnemyExplosion";
+	}
+
+	if (effectName) {
+		for (let i = 0; i < 10; i++) {
+			scene.time.delayedCall(i * 1/10 * 1000, function() {
+				let effect = scene.add.sprite(0, 0, effectName).play(effectName);
+				effect.x = enemy.x + rnd(-20, 20);
+				effect.y = enemy.y + rnd(-20, 20);
+				effect.on("animationcomplete", function(anim) {
+					effectAnimCallback(effect, anim);
+				});
+			});
+		}
+	}
+}
+
+function destroyBullet(bullet) {
+	var effect = null;
+	if (bullet.udata.type == "fire") effect = scene.add.sprite(0, 0, "fireParticleShatter").play("fireParticleShatter");
+	if (bullet.udata.type == "ice") effect = scene.add.sprite(0, 0, "iceParticleShatter").play("iceParticleShatter");
+
+	if (effect) {
+		effect.x = bullet.x;
+		effect.y = bullet.y;
+		effect.on("animationcomplete", function(anim) {
+			effectAnimCallback(effect, anim);
+		});
+	}
+
 	bullet.destroy();
 }
 
@@ -480,7 +534,39 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/iceParticleShatter_1"},
 			{key: "sprites", frame: "sprites/iceParticleShatter_2"},
 			{key: "sprites", frame: "sprites/iceParticleShatter_3"}
-		]);
+		], 0);
+
+		createAnimFromSheet("fireParticleShatter", [
+			{key: "sprites", frame: "sprites/fireParticleShatter_0"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_1"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_2"},
+			{key: "sprites", frame: "sprites/fireParticleShatter_3"}
+		], 0);
+
+		createAnimFromSheet("iceEnemyExplosion", [
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_0"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_1"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_2"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_3"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_4"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_5"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_6"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_7"},
+			{key: "sprites", frame: "sprites/iceEnemyExplosion_8"}
+		], 0);
+
+		createAnimFromSheet("fireEnemyExplosion", [
+			{key: "sprites", frame: "sprites/enemy1Explosion_0"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_1"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_2"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_3"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_4"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_5"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_6"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_7"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_8"},
+			{key: "sprites", frame: "sprites/enemy1Explosion_9"}
+		], 0);
 
 		createAnimFromSheet("playerIdle", [
 			{key: "sprites", frame: "sprites/playerIdle_0"},
@@ -726,6 +812,7 @@ function startShop() {
 			icon.scaleX = icon.scaleY = 0.5; //@remove
 			icon.x = btn.x;
 			icon.y = btn.y;
+			game.shopIcons.push(icon);
 		}
 	}
 
@@ -952,7 +1039,7 @@ function updateGame() {
 		if (bullet.udata.friendly) {
 			if (rectContainsPoint(game.shieldEnemy.x - game.shieldEnemy.width/2, game.shieldEnemy.y - game.shieldEnemy.height/2, game.shieldEnemy.width, game.shieldEnemy.height, bullet.x, bullet.y)) {
 				game.lineProgress -= 0.005;
-				bullet.destroy();
+				destroyBullet(bullet);
 			}
 
 			game.enemies.forEach(function(enemy) {
@@ -976,15 +1063,7 @@ function updateGame() {
 	game.enemies.forEach(function(enemy) {
 		tickEffects(enemy);
 		if (enemy.udata.hp <= 0) {
-			if (enemy.udata.type == "ice") {
-				enemy.anims.play("enemy2Death", true);
-			} else if (enemy.udata.type == "fire") {
-				enemy.anims.play("fireEnemyDeath", true);
-			} else if (enemy.udata.type == "electric") {
-				enemy.anims.play("electricEnemyDeath", true);
-			} else {
-				enemy.anims.play("enemy1Death", true);
-			}
+			destroyEnemy(enemy);
 			return;
 		}
 
