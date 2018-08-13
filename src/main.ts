@@ -959,7 +959,7 @@ function startShop() {
 
 	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Spread ammo + 20", "Lightning ammo + 20", "Recover health"];
 	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo", "health"];
-	let iconPaths = ["sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton"];
+	let iconPaths = ["sprites/FireAmmo", "sprites/IceAmmo", "sprites/SpreadAmmo", "sprites/LightningAmmo", "sprites/Medkit"];
 	let prices = [FIRE_PRICE, ICE_PRICE, SPREAD_PRICE, ELECTRIC_PRICE, HP_PRICE];
 	let cols = 3;
 	let rows = 3;
@@ -988,9 +988,8 @@ function startShop() {
 			game.shopTexts.push(tf);
 
 			let icon = scene.add.image(0, 0, "sprites", iconPaths[index]);
-			icon.scaleX = icon.scaleY = 0.5; //@remove
 			icon.x = btn.x;
-			icon.y = btn.y;
+			icon.y = btn.y - 4;
 			game.shopIcons.push(icon);
 		}
 	}
