@@ -1174,7 +1174,7 @@ function updateGame() {
 	}
 	let player = game.player;
 
-	let speed = 5;
+	let speed = 5 * PLAYER_SPEED_MULTIPLIER;
 	speed /= game.scaleFactor;
 	if (player.udata.iceTicks > 0) speed /= clampMap(player.udata.iceTicks, 0, 60*5, 1, 5) * ICE_SLOW_MULTIPLIER;
 	if (up) player.y -= speed;
