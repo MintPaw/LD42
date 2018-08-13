@@ -26,6 +26,7 @@ let phaser = new Phaser.Game(config);
 
 let game;
 let didAnims = false;
+let music = null;
 function resetGame() {
 	game = {
 		frameCount: 0,
@@ -33,6 +34,9 @@ function resetGame() {
 		gun: null,
 		lineGraphic: null,
 		debugText: null,
+		weaponText: null,
+		waveText: null,
+		moneyText: null,
 		scaleFactor: 3,
 
 		tooltipText: null,
@@ -90,8 +94,6 @@ function resetGame() {
 		shopTexts: [],
 		shopIcons: [],
 		shopLeave: null,
-
-		mainMusic: null,
 	};
 
 	menuBg = null;
@@ -393,8 +395,8 @@ function preload() {
 	}
 
 	addAudio("mainMusic", "assets/audio/Music/Music Main Final Loop.ogg", 1);
-	// addAudio("menuMusic", "assets/audio/menuMusic.ogg", 1);
-	// addAudio("shopMusic", "assets/audio/shopMusic.ogg", 1);
+	addAudio("menuMusic", "assets/audio/Music/Menu music Final Loop.ogg", 1);
+	addAudio("shopMusic", "assets/audio/Music/Shop final loop form.ogg", 1);
 	addAudio("soundHurt1", "assets/audio/Sounds/Player/Player Hit/player_hurt_1.ogg", 3);
 	addAudio("soundHurt2", "assets/audio/Sounds/Player/Player Hit/player_hurt_2.ogg", 3);
 	addAudio("soundHurt3", "assets/audio/Sounds/Player/Player Hit/player_hurt_3.ogg", 3);
@@ -411,7 +413,7 @@ function preload() {
 	addAudio("soundIceFire", "assets/audio/Sounds/Player/Weapon/ice_fire.ogg", 5);
 	addAudio("enemyHitBasic", "assets/audio/Sounds/Enemy/HIt/enemy_hit_basic.ogg", 5);
 	addAudio("enemyHitFire", "assets/audio/Sounds/Enemy/HIt/enemy_hit_fire.ogg", 5);
-	addAudio("enemyHitElectric", "assets/audio/Sounds/Enemy/HIt/enemy_hit_electric.ogg", 5);
+	addAudio("enemyHitElectric", "assets/audio/Sounds/Enemy/HIt/enemy_hit_electric.ogg", 20);
 	addAudio("enemyHitIce", "assets/audio/Sounds/Enemy/HIt/enemy_hit_ice.ogg", 5);
 	addAudio("enemyDeath", "assets/audio/Sounds/Enemy/HIt/enemy_death.ogg", 5);
 	addAudio("shieldEnemyHit", "assets/audio/Sounds/Enemy/HIt/shield_enemy_hit.ogg", 5);
@@ -423,6 +425,16 @@ function preload() {
 
 function create() {
 	log("In create");
+
+	music = scene.sound.add("menuMusic", { loop: true });
+	music.play();
+	music.volume = 0;
+
+	scene.tweens.add({
+		targets: music,
+		volume: { value: SOUND_MAIN_MUSIC_VOLUME, duration: 1000, ease: "Power1" },
+	});
+
 	scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
 	resetGame();
 }
@@ -472,8 +484,14 @@ function playerAnimCallback(anim) {
 	if (anim.key == "playerDeath") {
 		game.player.destroy();
 		scene.cameras.main.fade(1000, 0, 0, 0, false);
-		scene.time.delayedCall(1000, function() {
-			scene.scene.restart();
+
+		scene.tweens.add({
+			targets: music,
+			volume: { value: 0, duration: 1000, ease: "Power1" },
+			onComplete: function() {
+				music.destroy();
+				scene.scene.restart();
+			}
 		});
 	}
 }
@@ -791,10 +809,6 @@ function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
-		game.mainMusic = scene.sound.add("mainMusic", { loop: true });
-		game.mainMusic.play();
-		game.mainMusic.setVolume(SOUND_MAIN_MUSIC_VOLUME);
-
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
 
@@ -842,11 +856,23 @@ function update(delta) {
 		scene.cameras.main.scrollX = -scene.cameras.main.width/game.scaleFactor;
 		scene.cameras.main.scrollY = -scene.cameras.main.height/game.scaleFactor;
 
-		game.debugText = scene.add.bitmapText(0, 0, "defaultFont", "Debug text");
+		game.debugText = scene.add.bitmapText(0, 0, "defaultFont", "");
 		game.debugText.depth = 1;
 
 		game.tooltipText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
 		game.tooltipText.depth = 1;
+
+		game.weaponText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
+		game.weaponText.depth = 1;
+		game.weaponText.scaleX = game.weaponText.scaleY = 1/3;
+
+		game.waveText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
+		game.waveText.depth = 1;
+		game.waveText.scaleX = game.waveText.scaleY = 1/3;
+
+		game.moneyText = scene.add.bitmapText(0, 0, "defaultFont", "Tooltip");
+		game.moneyText.depth = 1;
+		game.moneyText.scaleX = game.moneyText.scaleY = 1/3;
 
 		game.shieldEnemy = scene.add.sprite(0, 0, "shieldEnemyIdle").play("shieldEnemyIdle");
 	}
@@ -880,7 +906,23 @@ function update(delta) {
 	if (game.currentWeapon == 2) currentWeaponStr = "Ice";
 	if (game.currentWeapon == 3) currentWeaponStr = "Spread";
 	if (game.currentWeapon == 4) currentWeaponStr = "Lightning";
-	game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount+"\nMoney: "+game.money);
+
+	let ammoStr = "";
+	if (game.currentWeapon != 0) ammoStr = "["+game.ammo[game.currentWeapon]+"]";
+
+	game.weaponText.setText("Weapon: "+currentWeaponStr+" "+ammoStr);
+	game.weaponText.x = 2;
+	game.weaponText.y = 2;
+
+	game.waveText.setText("Enemies left: "+(game.enemies.length+game.timerCount));
+	game.waveText.x = game.width - game.waveText.width - 2;
+	game.waveText.y = 2;
+
+	game.moneyText.setText("Money: $"+game.money);
+	game.moneyText.x = 2;
+	game.moneyText.y = game.height - game.moneyText.height - 2;
+
+	// game.debugText.setText("Weapon: "+currentWeaponStr+"\nAmmo: ["+game.ammo[1]+", "+game.ammo[2]+", "+game.ammo[3]+", "+game.ammo[4]+"]\nEnemies/Timers left: "+game.enemies.length+"/"+game.timerCount+"\nMoney: "+game.money);
 
 	{ /// Reset inputs
 		game.mouseJustDown = false;
@@ -889,6 +931,21 @@ function update(delta) {
 }
 
 function startShop() {
+	scene.tweens.add({
+		targets: music,
+		volume: { value: 0, duration: 1000, ease: "Power1" },
+		onComplete: function() {
+			music = scene.sound.add("shopMusic", { loop: true });
+			music.play();
+			music.volume = 0;
+
+			scene.tweens.add({
+				targets: music,
+				volume: { value: SOUND_MAIN_MUSIC_VOLUME, duration: 1000, ease: "Power1" },
+			});
+		}
+	});
+
 	game.inShop = true;
 	game.shopBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
 	game.shopBg.x = game.shopBg.width/2;
@@ -951,13 +1008,28 @@ function updateMenu() {
 
 	if (game.mouseJustDown && spriteContainsPoint(startButton, game.mouseX, game.mouseY)) {
 		scene.cameras.main.fade(1000, 0, 0, 0, false);
-		scene.time.delayedCall(1000, function() {
-			scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
-			playSound("mouseSelect");
-			game.inMenu = false;
-			startLevel(1);
-			menuBg.destroy();
-			startButton.destroy();
+
+		scene.tweens.add({
+			targets: music,
+			volume: { value: 0, duration: 1000, ease: "Power1" },
+			onComplete: function() {
+				music = scene.sound.add("mainMusic", { loop: true });
+				music.play();
+				music.volume = 0;
+
+				scene.tweens.add({
+					targets: music,
+					volume: { value: SOUND_MAIN_MUSIC_VOLUME, duration: 1000, ease: "Power1" },
+					onComplete: function() {
+						scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
+						playSound("mouseSelect");
+						game.inMenu = false;
+						startLevel(1);
+						menuBg.destroy();
+						startButton.destroy();
+					}
+				});
+			}
 		});
 	}
 }
@@ -1000,6 +1072,22 @@ function updateShop() {
 			game.shopLeave.destroy();
 			game.inShop = false;
 			startLevel(game.curLevel+1);
+
+			scene.tweens.add({
+				targets: music,
+				volume: { value: 0, duration: 1000, ease: "Power1" },
+				onComplete: function() {
+					music = scene.sound.add("mainMusic", { loop: true });
+					music.play();
+					music.volume = 0;
+
+					scene.tweens.add({
+						targets: music,
+						volume: { value: SOUND_MAIN_MUSIC_VOLUME, duration: 1000, ease: "Power1" },
+					});
+				}
+			});
+
 		}
 	}
 }
@@ -1037,11 +1125,11 @@ function updateGame() {
 		game.currentWeapon = 4;
 	}
 
-	// if (space) {
-	// 	game.enemies.forEach(function(enemy) {
-	// 		enemy.udata.hp = 0;
-	// 	});
-	// }
+	if (space) {
+		game.enemies.forEach(function(enemy) {
+			enemy.udata.hp = 0;
+		});
+	}
 
 	game.lineProgress += 0.0001;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
