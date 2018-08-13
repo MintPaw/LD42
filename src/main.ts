@@ -423,6 +423,7 @@ function preload() {
 
 function create() {
 	log("In create");
+	scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
 	resetGame();
 }
 
@@ -446,6 +447,7 @@ function playSound(id, loops=false) {
 	if (id == "enemyHitBasic") sound.setVolume(SOUND_ENEMY_HIT_BASIC_VOLUME);
 	if (id == "enemyHitFire") sound.setVolume(SOUND_ENEMY_HIT_FIRE_VOLUME);
 	if (id == "enemyHitIce") sound.setVolume(SOUND_ENEMY_HIT_ICE_VOLUME);
+	if (id == "enemyHitElectric") sound.setVolume(SOUND_ENEMY_HIT_ELECTRIC_VOLUME);
 	if (id == "enemyDeath") sound.setVolume(SOUND_ENEMY_DEATH_VOLUME);
 	if (id == "shieldEnemyHit") sound.setVolume(SOUND_SHIELD_ENEMY_HIT_VOLUME);
 	if (id == "weaponSwitch") sound.setVolume(SOUND_WEAPON_SWITCH_VOLUME);
@@ -469,7 +471,10 @@ function createHpBar(target) {
 function playerAnimCallback(anim) {
 	if (anim.key == "playerDeath") {
 		game.player.destroy();
-		scene.scene.restart();
+		scene.cameras.main.fade(1000, 0, 0, 0, false);
+		scene.time.delayedCall(1000, function() {
+			scene.scene.restart();
+		});
 	}
 }
 
@@ -844,8 +849,6 @@ function update(delta) {
 		game.tooltipText.depth = 1;
 
 		game.shieldEnemy = scene.add.sprite(0, 0, "shieldEnemyIdle").play("shieldEnemyIdle");
-
-		startLevel(1);
 	}
 
 	game.time = phaser.loop.time;
@@ -947,10 +950,15 @@ function updateMenu() {
 	startButton.depth = 2;
 
 	if (game.mouseJustDown && spriteContainsPoint(startButton, game.mouseX, game.mouseY)) {
-		playSound("mouseSelect");
-		game.inMenu = false;
-		menuBg.destroy();
-		startButton.destroy();
+		scene.cameras.main.fade(1000, 0, 0, 0, false);
+		scene.time.delayedCall(1000, function() {
+			scene.cameras.main.fadeIn(1000, 0, 0, 0, null, this);
+			playSound("mouseSelect");
+			game.inMenu = false;
+			startLevel(1);
+			menuBg.destroy();
+			startButton.destroy();
+		});
 	}
 }
 
