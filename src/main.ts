@@ -97,6 +97,7 @@ function resetGame() {
 	};
 
 	menuBg = null;
+	menuBg2 = null;
 	startButton = null;
 
 	if (!didAnims) {
@@ -948,6 +949,7 @@ function startShop() {
 
 	game.inShop = true;
 	game.shopBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
+	game.shopBg.alpha = 0.75;
 	game.shopBg.x = game.shopBg.width/2;
 	game.shopBg.y = game.shopBg.height/2;
 
@@ -994,16 +996,24 @@ function startShop() {
 }
 
 var menuBg = null;
+var menuBg2 = null;
 var startButton = null;
 function updateMenu() {
 	if (!menuBg) menuBg = scene.add.image(0, 0, "sprites", "sprites/shopBg");
-	menuBg.x = menuBg.width/2;
-	menuBg.y = menuBg.height/2;
+	scaleSpriteToSize(menuBg, game.width, game.height, true);
+	menuBg.x = game.width/2;
+	menuBg.y = game.height/2;
 	menuBg.depth = 2;
 
+	if (!menuBg2) menuBg2 = scene.add.image(0, 0, "sprites", "sprites/titleBg");
+	scaleSpriteToSize(menuBg2, game.width, game.height, true);
+	menuBg2.x = game.width/2;
+	menuBg2.y = game.height/2;
+	menuBg2.depth = 2;
+
 	if (!startButton) startButton = scene.add.image(0, 0, "sprites", "sprites/startButton");
-	startButton.x = game.width/2;
-	startButton.y = game.height*0.75;
+	startButton.x = game.width*0.25;
+	startButton.y = game.height*0.5;
 	startButton.depth = 2;
 
 	if (game.mouseJustDown && spriteContainsPoint(startButton, game.mouseX, game.mouseY)) {
@@ -1026,6 +1036,7 @@ function updateMenu() {
 						game.inMenu = false;
 						startLevel(1);
 						menuBg.destroy();
+						menuBg2.destroy();
 						startButton.destroy();
 					}
 				});
@@ -1170,7 +1181,7 @@ function updateGame() {
 	if (right) player.x += speed;
 
 	if (player.y < game.linePosition + player.height/2) player.y = game.linePosition + player.height/2;
-	if (player.y > game.height - player.height/2 - 16) player.y = game.height - player.height/2 - 16;
+	if (player.y > game.height - player.height/2 - 16) player.y = game.height - player.height/2 - 16;;
 	if (player.x < player.width/2 + 5) player.x = player.width/2 + 5;
 	if (player.x > game.width - player.width/2 - 16) player.x = game.width - player.width/2 - 16;
 
