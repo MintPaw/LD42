@@ -5,10 +5,10 @@ all:
 	$(MAKE) r
 
 processAudio:
-	for file in sourceAssets/audio/*.wav; do \
-		ffmpeg -i $$file -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y & \
-	done; \
-	wait;
+	# for file in sourceAssets/audio/*.wav; do \
+	# 	ffmpeg -i $$file -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y & \
+	# done; \
+	# wait;
 
 
 b:
