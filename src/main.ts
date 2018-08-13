@@ -87,6 +87,7 @@ let game = {
 	shopBg: null,
 	shopButtons: [],
 	shopTexts: [],
+	shopIcons: [],
 	shopLeave: null,
 
 	mainMusic: null,
@@ -694,6 +695,7 @@ function startShop() {
 
 	let buttonDesc = ["Fire ammo + 20", "Ice ammo + 20", "Split ammo + 20", "Lightning ammo + 20"];
 	let buttonNames = ["fireAmmo", "iceAmmo", "splitAmmo", "lightningAmmo"];
+	let iconPaths = ["sprites/shopButton", "sprites/shopButton", "sprites/shopButton", "sprites/shopButton"];
 	let prices = [10, 20, 30, 40];
 	let cols = 3;
 	let rows = 3;
@@ -701,7 +703,6 @@ function startShop() {
 
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
-
 			let btn = scene.add.image(0, 0, "sprites", "sprites/shopButton");
 			let index = (x % cols) + (y * cols);
 			btn.udata = {
@@ -718,8 +719,13 @@ function startShop() {
 			let tf = scene.add.bitmapText(0, 0, "defaultFont", "$"+btn.udata.price);
 			tf.scaleX = tf.scaleY = 1/3;
 			tf.x = btn.x - tf.width/2;
-			tf.y = btn.y + btn.height/2 - tf.height - 1;
+			tf.y = btn.y + btn.height/2 - tf.height - 3;
 			game.shopTexts.push(tf);
+
+			let icon = scene.add.image(0, 0, "sprites", iconPaths[index]);
+			icon.scaleX = icon.scaleY = 0.5; //@remove
+			icon.x = btn.x;
+			icon.y = btn.y;
 		}
 	}
 
@@ -754,8 +760,12 @@ function updateShop() {
 			game.shopTexts.forEach(function(tf) {
 				tf.destroy();
 			});
+			game.shopIcons.forEach(function(icon) {
+				icon.destroy();
+			});
 			game.shopButtons = [];
 			game.shopTexts = [];
+			game.shopIcons = [];
 			game.shopBg.destroy();
 			game.shopLeave.destroy();
 			game.inShop = false;
