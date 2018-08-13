@@ -1170,9 +1170,9 @@ function updateGame() {
 	if (right) player.x += speed;
 
 	if (player.y < game.linePosition + player.height/2) player.y = game.linePosition + player.height/2;
-	if (player.y > game.height - player.height/2) player.y = game.height - player.height/2;
-	if (player.x < player.width/2) player.x = player.width/2;
-	if (player.x > game.width - player.width/2) player.x = game.width - player.width/2;
+	if (player.y > game.height - player.height/2 - 16) player.y = game.height - player.height/2 - 16;
+	if (player.x < player.width/2 + 5) player.x = player.width/2 + 5;
+	if (player.x > game.width - player.width/2 - 16) player.x = game.width - player.width/2 - 16;
 
 	if (player.udata.hp > 0) {
 		if (up || down || left || right) {
