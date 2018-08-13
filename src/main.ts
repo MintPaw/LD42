@@ -976,8 +976,8 @@ function updateGame() {
 		game.player.x = game.width/2;
 		game.player.y = game.height/2;
 		game.player.udata = {
-			hp: 100,
-			maxHp: 100,
+			hp: PLAYER_MAX_HP,
+			maxHp: PLAYER_MAX_HP,
 			fireTicks: 0,
 			iceTicks: 0,
 		};
@@ -1121,7 +1121,7 @@ function updateGame() {
 		enemy.udata.bulletDelay -= game.elapsed;
 		if (enemy.udata.bulletDelay <= 0) {
 			enemy.udata.bulletDelay = enemy.udata.bulletDelayMax;
-			if (enemy.y < enemy.height/2) return; // continue
+			if (enemy.y < 0) return; // continue
 			if (enemy.udata.type == "default") {
 				shootBullet("beam", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y), false);
 				enemy.anims.play("enemy1Attack");
