@@ -236,69 +236,23 @@ function createEnemy(enemyType, xpos, ypos) {
 function startLevel(num) {
 	game.curLevel = num;
 	if (num == 1) {
-		addWaveTimer(1, function() {
-			let en = createEnemy("default", game.width*0.1, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		// addWaveTimer(1, function() {
-		// 	let en = createEnemy("rapid", game.width*0.3, -100);
-		// 	en.udata.pattern = "randomWalk";
-		// });
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("electric", game.width*0.3, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("spread", game.width*0.5, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("ice", game.width*0.7, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("fire", game.width*0.9, -100);
-			en.udata.pattern = "randomWalk";
-		});
+		for (let i = 0; i < 5; i++) {
+			addWaveTimer(i, function() {
+				let en = createEnemy("default", game.width*(0.2*i), -100);
+				en.udata.pattern = "randomWalk";
+			});
+		}
 	}
 
-	if (num == 2) {
-		addWaveTimer(1, function() {
-			let en = createEnemy("default", game.width*0.1, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("default", game.width*0.3, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("default", game.width*0.5, -100);
-			en.udata.pattern = "randomWalk";
-		});
-	}
-
-	if (num == 3) {
-		addWaveTimer(1, function() {
-			let en = createEnemy("rapid", game.width*0.1, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("rapid", game.width*0.3, -100);
-			en.udata.pattern = "randomWalk";
-		});
-
-		addWaveTimer(1, function() {
-			let en = createEnemy("rapid", game.width*0.5, -100);
-			en.udata.pattern = "randomWalk";
-		});
+	if (num >= 2) {
+		let totalEnemies = num+5;
+		let enemyTypes = ["default", "electric", "spread", "ice", "fire"];
+		for (let i = 0; i < totalEnemies; i++) {
+			addWaveTimer(i, function() {
+				let en = createEnemy(enemyTypes[Math.round(rnd(0, enemyTypes.length-1))], map(i, 0, totalEnemies, 0, game.width), -100);
+				en.udata.pattern = "randomWalk";
+			});
+		}
 	}
 }
 
@@ -971,6 +925,11 @@ function updateGame() {
 		}
 
 		if (bullet.udata.friendly) {
+			if (rectContainsPoint(game.shieldEnemy.x - game.shieldEnemy.width/2, game.shieldEnemy.y - game.shieldEnemy.height/2, game.shieldEnemy.width, game.shieldEnemy.height, bullet.x, bullet.y)) {
+				game.lineProgress -= 0.005;
+				bullet.destroy();
+			}
+
 			game.enemies.forEach(function(enemy) {
 				if (bullet.udata.ignoreEnemy == enemy) return;
 				if (rectContainsPoint(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height, bullet.x, bullet.y)) {
@@ -981,11 +940,6 @@ function updateGame() {
 			if (rectContainsPoint(player.x - player.width/2, player.y - player.height/2, player.width, player.height, bullet.x, bullet.y)) {
 				bulletHit(player, bullet);
 			}
-		}
-
-		if (rectContainsPoint(game.shieldEnemy.x - game.shieldEnemy.width/2, game.shieldEnemy.y - game.shieldEnemy.height/2, game.shieldEnemy.width, game.shieldEnemy.height, bullet.x, bullet.y)) {
-			game.lineProgress -= 0.005;
-			bullet.destroy();
 		}
 	});
 
