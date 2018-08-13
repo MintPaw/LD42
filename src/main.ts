@@ -1152,10 +1152,9 @@ function updateGame() {
 	game.shieldEnemy.y = game.linePosition - 1;
 
 	if (!game.lineGraphic) {
-		game.lineGraphic = scene.add.graphics({lineStyle: {width: 4, color: 0xaa00aa}});
-		game.lineGraphic.strokeLineShape(new Phaser.Geom.Line(0, 0, game.width, 0));
+		game.lineGraphic = scene.add.image(0, 0, "sprites", "sprites/shield");
 	}
-	game.lineGraphic.x = 0;
+	game.lineGraphic.x = game.width/2;
 	game.lineGraphic.y = game.linePosition;
 	game.lineGraphic.alpha = 0.5;
 
