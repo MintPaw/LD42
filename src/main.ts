@@ -52,6 +52,7 @@ let game = {
 
 	bulletDelay: 0,
 
+	shieldEnemy: null,
 	lineProgress:<number> 0.1,
 	linePosition:<number> 0,
 
@@ -529,6 +530,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/playerIdle_3"}
 		]);
 
+		createAnimFromSheet("playerWalk", [
+			{key: "sprites", frame: "sprites/playerWalk_0"},
+			{key: "sprites", frame: "sprites/playerWalk_1"},
+			{key: "sprites", frame: "sprites/playerWalk_2"},
+			{key: "sprites", frame: "sprites/playerWalk_3"}
+		]);
+
 		createAnimFromSheet("playerDeath", [
 			{key: "sprites", frame: "sprites/playerDeath_0"},
 			{key: "sprites", frame: "sprites/playerDeath_1"},
@@ -620,6 +628,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/electricEnemyDeath_3"}
 		], 0);
 
+		createAnimFromSheet("shieldEnemyIdle", [
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_0"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_1"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_2"},
+			{key: "sprites", frame: "sprites/shieldEnemyIdle_3"}
+		]);
+
 		game.width = phaser.canvas.width;
 		game.height = phaser.canvas.height;
 
@@ -672,6 +687,8 @@ function update(delta) {
 
 		game.tooltipText = scene.add.bitmapText(0, 0, "testFont", "Tooltip");
 		game.tooltipText.depth = 1;
+
+		game.shieldEnemy = scene.add.sprite(0, 0, "shieldEnemyIdle").play("shieldEnemyIdle");
 
 		startLevel(1);
 	}
@@ -825,12 +842,16 @@ function updateGame() {
 	game.lineProgress += 0.0001;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
 
+	game.shieldEnemy.x = game.width/2;
+	game.shieldEnemy.y = game.linePosition - 1;
+
 	if (!game.lineGraphic) {
 		game.lineGraphic = scene.add.graphics({lineStyle: {width: 4, color: 0xaa00aa}});
 		game.lineGraphic.strokeLineShape(new Phaser.Geom.Line(0, 0, game.width, 0));
 	}
 	game.lineGraphic.x = 0;
 	game.lineGraphic.y = game.linePosition;
+	game.lineGraphic.alpha = 0.5;
 
 	/// Player
 	if (!game.player) {
@@ -960,6 +981,11 @@ function updateGame() {
 			if (rectContainsPoint(player.x - player.width/2, player.y - player.height/2, player.width, player.height, bullet.x, bullet.y)) {
 				bulletHit(player, bullet);
 			}
+		}
+
+		if (rectContainsPoint(game.shieldEnemy.x - game.shieldEnemy.width/2, game.shieldEnemy.y - game.shieldEnemy.height/2, game.shieldEnemy.width, game.shieldEnemy.height, bullet.x, bullet.y)) {
+			game.lineProgress -= 0.005;
+			bullet.destroy();
 		}
 	});
 
