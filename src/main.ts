@@ -848,6 +848,7 @@ function update(delta) {
 		let tiles = game.map.addTilesetImage("default", "tileset");
 
 		game.mapLayers[0] = game.map.createStaticLayer(0, tiles, 0, 0);
+		game.mapLayers[0].x += 20;
 
 		// game.mapLayers[0].scaleX = game.scaleFactor;
 		// game.mapLayers[0].scaleY = game.scaleFactor;
@@ -1183,9 +1184,9 @@ function updateGame() {
 	if (right) player.x += speed;
 
 	if (player.y < game.linePosition + player.height/2) player.y = game.linePosition + player.height/2;
-	if (player.y > game.height - player.height/2 - 16) player.y = game.height - player.height/2 - 16;;
-	if (player.x < player.width/2 + 5) player.x = player.width/2 + 5;
-	if (player.x > game.width - player.width/2 - 16) player.x = game.width - player.width/2 - 16;
+	if (player.y > game.height - player.height/2 - 16) player.y = game.height - player.height/2 - 16;
+	if (player.x < player.width/2 + 20) player.x = player.width/2 + 20;
+	if (player.x > game.width - player.width/2 - 32) player.x = game.width - player.width/2 - 32;
 
 	if (player.udata.hp > 0) {
 		if (up || down || left || right) {
@@ -1374,7 +1375,7 @@ function updateGame() {
 				let rads = degToRad(getAngleBetweenCoords(enemy.x, enemy.y, enemy.udata.nextPosX, enemy.udata.nextPosY));
 				let speed = enemy.udata.walkSpeed;
 				speed /= game.scaleFactor;
-				if (enemy.udata.iceTicks > 0) speed /= clampMap(enemy.udata.iceTicks, 0, 60*5, 1, 5);
+				if (enemy.udata.iceTicks > 0) speed /= clampMap(enemy.udata.iceTicks, 0, 60*5, 1, 5) * ICE_SLOW_MULTIPLIER;
 				enemy.x += Math.cos(rads) * speed;
 				enemy.y += Math.sin(rads) * speed;
 			}
