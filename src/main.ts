@@ -284,10 +284,12 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		rads: degToRad(deg),
 		speed: 5,
 		ignoreEnemy: null,
+		damage: 1,
 	};
 
 	if (bulletType == "default") {
 		bullet = scene.add.sprite(0, 0, "projectile1").play("projectile1");
+		bulletData.damage = DEFAULT_SHOT_DAMAGE;
 	} else if (bulletType == "dot") {
 		bullet = scene.add.sprite(0, 0, "projectile2").play("projectile2");
 	} else if (bulletType == "rocket") {
@@ -296,12 +298,16 @@ function shootBullet(bulletType, xpos, ypos, deg, friendly) {
 		bullet = scene.add.sprite(0, 0, "projectile4").play("projectile4");
 	} else if (bulletType == "fire") {
 		bullet = scene.add.sprite(0, 0, "fireParticle1").play("fireParticle1");
+		bulletData.damage = FIRE_SHOT_DAMAGE;
 	} else if (bulletType == "ice") {
 		bullet = scene.add.sprite(0, 0, "iceParticle").play("iceParticle");
+		bulletData.damage = ICE_SHOT_DAMAGE;
 	} else if (bulletType == "spread") {
 		bullet = scene.add.sprite(0, 0, "spreadParticle").play("spreadParticle");
+		bulletData.damage = SPREAD_SHOT_DAMAGE;
 	} else if (bulletType == "lightning") {
 		bullet = scene.add.sprite(0, 0, "electricParticle").play("electricParticle");
+		bulletData.damage = ELECTRIC_SHOT_DAMAGE;
 	} else {
 		log("Unknown bullet type "+bulletType);
 	}
@@ -336,7 +342,7 @@ function bulletHit(unit, bullet) {
 		}
 	}
 
-	unit.udata.hp -= 1;
+	unit.udata.hp -= bullet.udata.damage;
 	if (bullet.udata.type == "fire") {
 		unit.udata.fireTicks += 60;
 	}
