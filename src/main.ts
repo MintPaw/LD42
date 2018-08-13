@@ -389,6 +389,7 @@ function destroyBullet(bullet) {
 	var effect = null;
 	if (bullet.udata.type == "fire") effect = scene.add.sprite(0, 0, "fireParticleShatter").play("fireParticleShatter");
 	if (bullet.udata.type == "ice") effect = scene.add.sprite(0, 0, "iceParticleShatter").play("iceParticleShatter");
+	else effect = scene.add.sprite(0, 0, "projectile1Explosion").play("projectile1Explosion");
 
 	if (effect) {
 		effect.x = bullet.x;
@@ -566,6 +567,13 @@ function update(delta) {
 			{key: "sprites", frame: "sprites/enemy1Explosion_7"},
 			{key: "sprites", frame: "sprites/enemy1Explosion_8"},
 			{key: "sprites", frame: "sprites/enemy1Explosion_9"}
+		], 0);
+
+		createAnimFromSheet("projectile1Explosion", [
+			{key: "sprites", frame: "sprites/projectile1Explosion_0"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_1"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_2"},
+			{key: "sprites", frame: "sprites/projectile1Explosion_3"}
 		], 0);
 
 		createAnimFromSheet("playerIdle", [
