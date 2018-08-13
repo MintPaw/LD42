@@ -5,10 +5,13 @@ all:
 	$(MAKE) r
 
 processAudio:
-	# for file in sourceAssets/audio/*.wav; do \
-	# 	ffmpeg -i $$file -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y & \
-	# done; \
-	# wait;
+	IFS=$$'\n'; \
+	for file in `find sourceAssets/audio/ -type f -name "*.wav"`; do \
+		echo "$$file"; \
+		ffmpeg -i "$$file" -loglevel error -qscale:a 2 "$${file%.*}.ogg" -y; \
+		echo "good"; \
+	done; \
+	wait;
 
 
 b:
@@ -18,7 +21,8 @@ b:
 	-cd sourceAssets; \
 		$(PACKER) --powerOf2 --format pixijs sprites ../bin/assets
 	-mkdir bin/assets/audio
-	cp sourceAssets/audio/*.ogg bin/assets/audio
+	cp -r sourceAssets/audio/ bin/assets
+	find bin/assets/audio -type f -name "*.wav" -delete
 	cp -r sourceAssets/maps bin/assets
 	cp -r sourceAssets/fonts bin/assets
 	cp sourceAssets/*.png bin/assets
