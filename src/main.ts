@@ -45,6 +45,7 @@ let game = {
 	currentWeapon: 0,
 	timerCount: 0,
 	curLevel: 0,
+	inMenu:<boolean> true,
 	inShop:<boolean> false,
 
 	map: null,
@@ -123,8 +124,6 @@ function preload() {
 }
 
 function create() {
-	game.mainMusic = scene.sound.add("mainMusic", { loop: true });
-	game.mainMusic.play();
 }
 
 function createHpBar(target) {
@@ -388,6 +387,9 @@ function fireLightning(xpos, ypos, deg, friendly) {
 function update(delta) {
 	if (game.firstFrame) {
 		game.firstFrame = false;
+
+		game.mainMusic = scene.sound.add("mainMusic", { loop: true });
+		game.mainMusic.play();
 
 		function createAnimFromSheet(name, frames, repeat=-1, frameRate=10) {
 			scene.anims.create({
