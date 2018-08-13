@@ -28,6 +28,7 @@ let abs = Math.abs;
 let phaser = new Phaser.Game(config);
 
 let game = {
+	frameCount: 0,
 	player: null,
 	gun: null,
 	lineGraphic: null,
@@ -117,6 +118,11 @@ function preload() {
 	addAudio("soundHurt3", "assets/audio/Sounds/Player/Player Hit/player_hurt_3.ogg", 3);
 	addAudio("soundHurt4", "assets/audio/Sounds/Player/Player Hit/player_hurt_4.ogg", 3);
 	addAudio("soundHurt5", "assets/audio/Sounds/Player/Player Hit/player_hurt_5.ogg", 3);
+	addAudio("footstep1", "assets/audio/Sounds/Footsteps/player_footstep_1.ogg", 3);
+	addAudio("footstep2", "assets/audio/Sounds/Footsteps/player_footstep_2.ogg", 3);
+	addAudio("footstep3", "assets/audio/Sounds/Footsteps/player_footstep_3.ogg", 3);
+	addAudio("footstep4", "assets/audio/Sounds/Footsteps/player_footstep_4.ogg", 3);
+	addAudio("footstep5", "assets/audio/Sounds/Footsteps/player_footstep_5.ogg", 3);
 	addAudio("soundElectricFire", "assets/audio/Sounds/Player/Weapon/electric_fire.ogg", 5);
 	addAudio("soundBasicFire", "assets/audio/Sounds/Player/Weapon/basic_fire.ogg", 5);
 	addAudio("soundFireFire", "assets/audio/Sounds/Player/Weapon/fire_fire.ogg", 5);
@@ -467,6 +473,7 @@ function fireLightning(xpos, ypos, deg, friendly) {
 }
 
 function update(delta) {
+	game.frameCount++;
 	if (game.firstFrame) {
 		game.firstFrame = false;
 
@@ -1021,6 +1028,10 @@ function updateGame() {
 
 	if (player.udata.hp > 0) {
 		if (up || down || left || right) {
+			if (game.frameCount % FOOT_STEP_INTERVAL == 0) {
+				let sound = scene.sound.add("footstep"+Math.round(rnd(1, 5)), { loop: false });
+				sound.play();
+			}
 			player.anims.play("playerWalk", true);
 		} else {
 			player.anims.play("playerIdle", true);
