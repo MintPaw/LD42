@@ -1142,7 +1142,7 @@ function updateGame() {
 	// 	});
 	// }
 
-	game.lineProgress += 0.0001;
+	game.lineProgress += 0.0001 * SHIELD_SPEED_MULTIPLIER;
 	game.linePosition = clampMap(game.lineProgress, 0, 1, 0, game.height*0.85);
 
 	game.shieldEnemy.x = game.width/2;
