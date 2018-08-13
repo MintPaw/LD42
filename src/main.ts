@@ -701,7 +701,7 @@ function bulletHit(unit, bullet) {
 	if (bullet.udata.type == "spread") {
 		let angles = [45, 90+45, 180+45, 270+45];
 		for (let i = 0; i < angles.length; i++) {
-			let newBullet = shootBullet("spread", unit.x, unit.y, angles[i], bullet.udata.friendly);
+			let newBullet = shootBullet("default", unit.x, unit.y, angles[i], bullet.udata.friendly);
 			newBullet.udata.ignoreEnemy = unit;
 		}
 	}
@@ -1338,7 +1338,7 @@ function updateGame() {
 					let endOff = ENEMY_SPREAD_DEGREE_RANGE;
 					let angleOff = map(i, 0, shots, startOff, endOff);
 
-					let bullet = shootBullet("default", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
+					let bullet = shootBullet("spread", enemy.x, enemy.y, getAngleBetweenCoords(enemy.x, enemy.y, player.x, player.y) + angleOff, false);
 					bullet.udata.speed = SPREAD_SHOT_ENEMY_SPEED;
 				}
 				enemy.anims.play("spreadEnemyAttack");
